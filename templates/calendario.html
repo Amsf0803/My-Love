@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Calendario · Mi Universo{% endblock %}
+{% block body_class %}page-calendario{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="calendar-header">
+    <h1>{{ nombre_mes }} {{ anio }}</h1>
+    <div class="calendar-nav">
+      <a href="{{ url_for('galeria.calendario', anio=anio_mes_anterior, mes=mes_anterior) }}" aria-label="Mes anterior">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <a href="{{ url_for('galeria.calendario', anio=anio_mes_siguiente, mes=mes_siguiente) }}" aria-label="Mes siguiente">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="calendar-grid">
+    {% for etiqueta in ['L', 'M', 'X', 'J', 'V', 'S', 'D'] %}
+      <div class="calendar-weekday">{{ etiqueta }}</div>
+    {% endfor %}
+
+    {% for semana in semanas %}
+      {% for dia in semana %}
+        {% if dia == 0 %}
+          <div class="calendar-day calendar-day--empty"></div>
+        {% else %}
+          {% set fotos_dia = fotos_por_dia.get(dia, []) %}
+          {% set es_aniversario = dia == 3 %}
+          {% set es_hoy = (hoy.year == anio and hoy.month == mes and hoy.day == dia) %}
+          <button
+            type="button"
+            class="calendar-day {% if es_aniversario %}calendar-day--aniversario{% endif %} {% if es_hoy %}calendar-day--hoy{% endif %}"
+            data-fecha="{{ '%04d-%02d-%02d' % (anio, mes, dia) }}"
+          >
+            {% if fotos_dia %}
+              <span class="calendar-day__thumb">
+                <img src="{{ url_for('static', filename=fotos_dia[0].ruta_archivo) }}" alt="" loading="lazy">
+              </span>
+            {% endif %}
+            <span class="calendar-day__num">{{ dia }}</span>
+          </button>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="calendar-legend">
+    <span><span class="legend-dot legend-dot--aniversario"></span> Nuestro día</span>
+    <span><span class="legend-dot legend-dot--hoy"></span> Hoy</span>
+  </div>
+</div>
+
+<!-- Modal: ver / subir fotos de un día -->
+<div class="modal-overlay" id="modal-dia">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 id="modal-dia-titulo">Ese día</h2>
+      <button type="button" class="modal__close" id="modal-dia-cerrar" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div id="modal-dia-loading" class="modal__loading">Buscando fotos…</div>
+    <div id="modal-dia-fotos" class="modal__photos" hidden></div>
+    <p id="modal-dia-vacio" class="modal__empty" hidden>Todavía no hay fotos de este día.</p>
+
+    <form
+      id="form-subir-foto"
+      method="POST"
+      action="{{ url_for('galeria.subir_foto') }}"
+      enctype="multipart/form-data"
+    >
+      <input type="hidden" name="fecha_asociada" id="modal-dia-fecha-input" value="">
+      <div class="field">
+        <label for="archivos-fotos">Agregar foto(s) a este día</label>
+        <!-- ¡Aquí está la magia! name="archivos" y el atributo "multiple" -->
+        <input type="file" id="archivos-fotos" name="archivos" accept="image/*" multiple required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-sm">Subir fotos</button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/calendario.js') }}"></script>
+{% endblock %}

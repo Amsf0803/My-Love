@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar · Mi Universo{% endblock %}
+{% block body_class %}page-login{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="login-screen">
+  <div class="login-card card">
+    <p class="login-kicker">para ti</p>
+    <h1>Nuestro pequeño universo</h1>
+    <p>Solo una persona tiene la llave de este lugar. Escribe la fecha que los une todo.</p>
+
+    <form method="POST" action="{{ url_for('auth.login') }}" id="form-login">
+      <input type="hidden" name="password" id="password" value="">
+
+      <div class="pin-display" id="pin-display" aria-hidden="true">
+        <span class="pin-dot" data-dot></span>
+        <span class="pin-dot" data-dot></span>
+        <span class="pin-dot" data-dot></span>
+        <span class="pin-dot" data-dot></span>
+      </div>
+
+      <div class="keypad" role="group" aria-label="Teclado numérico">
+        <button type="button" class="keypad__key" data-digit="1">1</button>
+        <button type="button" class="keypad__key" data-digit="2">2</button>
+        <button type="button" class="keypad__key" data-digit="3">3</button>
+        <button type="button" class="keypad__key" data-digit="4">4</button>
+        <button type="button" class="keypad__key" data-digit="5">5</button>
+        <button type="button" class="keypad__key" data-digit="6">6</button>
+        <button type="button" class="keypad__key" data-digit="7">7</button>
+        <button type="button" class="keypad__key" data-digit="8">8</button>
+        <button type="button" class="keypad__key" data-digit="9">9</button>
+        <button type="button" class="keypad__key keypad__key--action" id="keypad-borrar" aria-label="Borrar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 4H8l-6 8 6 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M14.5 9.5l-5 5M9.5 9.5l5 5"/></svg>
+        </button>
+        <button type="button" class="keypad__key" data-digit="0">0</button>
+        <span class="keypad__key keypad__key--placeholder" aria-hidden="true"></span>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,952 @@
+/* =========================================================================
+   MI UNIVERSO - hoja de estilos global
+   -------------------------------------------------------------------------
+   Direccion de diseno: un cielo nocturno intimo, no una plantilla de SaaS.
+   Fondo azul-tinta profundo, acentos de luz de estrella (dorado) y de
+   afecto (rosa empolvado). Serif con caracter para los momentos grandes
+   (el contador, los titulos), sans-serif limpia para todo lo funcional.
+   ========================================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Sora:wght@400;500;600;700&display=swap");
+
+:root {
+  /* --- Color --- */
+  --bg: #0b0c1f;              /* cielo nocturno profundo */
+  --bg-elevated: #14152f;     /* superficies de tarjeta */
+  --bg-elevated-2: #1c1e3d;   /* hover / superficies sobre superficies */
+  --border: rgba(244, 242, 238, 0.1);
+  --border-strong: rgba(244, 242, 238, 0.18);
+
+  --text: #f4f2ee;            /* blanco calido, luz de estrella */
+  --text-muted: #a6a3c4;
+  --text-faint: #6f6d94;
+
+  --gold: #eab654;            /* luz de estrella */
+  --gold-soft: rgba(234, 182, 84, 0.16);
+  --pink: #ef9bb3;            /* afecto */
+  --pink-soft: rgba(239, 155, 179, 0.16);
+  --violet: #8f86e6;          /* acento secundario, noche profunda */
+
+  --danger: #e58a8a;
+  --success: #8fd0a9;
+
+  /* --- Tipografia --- */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Sora", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* --- Layout --- */
+  --content-width: 640px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-elevated: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* --- Reset basico --- */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+
+p { margin: 0 0 1em; color: var(--text-muted); }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+img { max-width: 100%; display: block; }
+
+::selection {
+  background: var(--gold-soft);
+  color: var(--text);
+}
+
+/* Foco visible para accesibilidad de teclado */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Fondo de estrellas, fijo detras de todo el contenido --- */
+#starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page-universo #starfield {
+  display: none; /* el canvas 3D ya ofrece su propio cielo */
+}
+
+/* --- Estructura general --- */
+.app-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+.container {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.container--wide {
+  max-width: 880px;
+}
+
+/* --- Navegacion --- */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  max-width: 880px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.navbar__brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 12px 2px var(--gold-soft);
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar__link {
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.navbar__link:hover {
+  color: var(--text);
+  background: var(--bg-elevated);
+}
+
+.navbar__link--active {
+  color: var(--bg);
+  background: var(--gold);
+}
+
+.navbar__link--active:hover {
+  color: var(--bg);
+  background: var(--gold);
+}
+
+/* --- Flash messages --- */
+.flash-list {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flash {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+}
+
+.flash--success { border-color: rgba(143, 208, 169, 0.35); color: var(--success); }
+.flash--error { border-color: rgba(229, 138, 138, 0.35); color: var(--danger); }
+.flash--warning { border-color: rgba(234, 182, 84, 0.35); color: var(--gold); }
+.flash--info { border-color: var(--border-strong); color: var(--text-muted); }
+
+/* --- Botones --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  padding: 0.7rem 1.35rem;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #241a06;
+}
+
+.btn-primary:hover {
+  background: #f1c874;
+  border-color: #f1c874;
+}
+
+.btn-block { width: 100%; }
+.btn-sm { padding: 0.45rem 0.9rem; font-size: 0.82rem; }
+
+/* --- Tarjetas --- */
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+}
+
+/* --- Formularios --- */
+.field {
+  margin-bottom: 1.1rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.field input[type="text"],
+.field input[type="password"],
+.field input[type="date"],
+.field textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  color: var(--text);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.5;
+}
+
+.field input[type="file"] {
+  width: 100%;
+  padding: 0.6rem 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  margin-top: 0.35rem;
+}
+
+/* Divisor orbital: un acento propio del tema en vez de un <hr> plano */
+.orbit-divider {
+  width: 100%;
+  height: 40px;
+  margin: 2.25rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orbit-divider svg { opacity: 0.55; }
+
+/* =========================================================================
+   LOGIN
+   ========================================================================= */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.login-card .login-kicker {
+  color: var(--pink);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.login-card h1 {
+  margin-bottom: 0.6rem;
+}
+
+.login-card > p {
+  margin-bottom: 1.75rem;
+}
+
+/* --- Teclado numérico (PIN de 4 dígitos) --- */
+.pin-display {
+  display: flex;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  background: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.pin-dot.is-filled {
+  background: var(--gold);
+  border-color: var(--gold);
+  transform: scale(1.1);
+}
+
+.pin-display.is-error .pin-dot {
+  border-color: var(--danger);
+}
+
+.pin-display.is-error .pin-dot.is-filled {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+.keypad__key {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.keypad__key:hover {
+  border-color: var(--border-strong);
+}
+
+.keypad__key:active {
+  transform: scale(0.94);
+  background: var(--bg-elevated-2);
+}
+
+.keypad__key--action {
+  color: var(--text-faint);
+  background: transparent;
+  border-color: transparent;
+}
+
+.keypad__key--action:hover {
+  color: var(--text);
+}
+
+.keypad__key--placeholder {
+  pointer-events: none;
+  border-color: transparent;
+  background: transparent;
+}
+
+/* =========================================================================
+   DASHBOARD
+   ========================================================================= */
+.hero {
+  text-align: center;
+  padding-top: 1rem;
+}
+
+.hero-kicker {
+  color: var(--pink);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+}
+
+.counter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem 0.5rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 480px) {
+  .counter { grid-template-columns: repeat(6, 1fr); }
+}
+
+.counter__unit {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.5rem;
+  text-align: center;
+}
+
+.counter__value {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter__label {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  margin-top: 2.5rem;
+}
+
+@media (max-width: 560px) {
+  .nav-grid { grid-template-columns: 1fr; }
+}
+
+.nav-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.75rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.nav-tile:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.nav-tile__icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+.nav-tile__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.nav-tile__desc {
+  font-size: 0.82rem;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+/* =========================================================================
+   CALENDARIO
+   ========================================================================= */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.calendar-header h1 {
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.calendar-nav a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.calendar-nav a:hover {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  padding-bottom: 0.4rem;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.88rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.calendar-day:hover {
+  border-color: var(--border-strong);
+}
+
+.calendar-day--empty {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+.calendar-day--aniversario {
+  background: var(--pink-soft);
+  color: var(--pink);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1.5px rgba(239, 155, 179, 0.45);
+}
+
+.calendar-day--hoy {
+  box-shadow: inset 0 0 0 1.5px var(--gold);
+}
+
+.calendar-day__thumb {
+  position: absolute;
+  inset: 4px;
+  border-radius: 7px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.calendar-day__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+}
+
+.calendar-day__num {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+.calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legend-dot--aniversario { background: var(--pink); }
+.legend-dot--hoy { background: var(--gold); }
+
+/* --- Modal (compartido: calendario y otras vistas) --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 6, 16, 0.72);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+  padding: 0;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+@media (min-width: 640px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 1.5rem;
+  }
+}
+
+.modal {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 1.75rem;
+  box-shadow: var(--shadow-elevated);
+}
+
+@media (min-width: 640px) {
+  .modal {
+    border-radius: var(--radius-lg);
+  }
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.modal__header h2 {
+  margin: 0;
+}
+
+.modal__close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+  background: transparent;
+}
+
+.modal__close:hover { color: var(--text); }
+
+.modal__photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal__photos img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.modal__empty {
+  font-size: 0.88rem;
+  color: var(--text-faint);
+  padding: 1rem 0;
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+}
+
+.modal__loading {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: var(--text-faint);
+  font-size: 0.88rem;
+}
+
+/* =========================================================================
+   CARTAS
+   ========================================================================= */
+.compose-card {
+  margin-bottom: 2.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-faint);
+  padding: 0.6rem 0.2rem;
+  margin-right: 1.25rem;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.tab-btn.is-active {
+  color: var(--text);
+  border-bottom-color: var(--gold);
+}
+
+.tab-panel { display: none; }
+.tab-panel.is-active { display: block; }
+
+.timeline {
+  position: relative;
+  padding-left: 1.75rem;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--gold), transparent 92%);
+  opacity: 0.4;
+}
+
+.timeline-entry {
+  position: relative;
+  margin-bottom: 1.75rem;
+}
+
+.timeline-entry::before {
+  content: "";
+  position: absolute;
+  left: -1.75rem;
+  top: 0.4rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.letter-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.4rem;
+}
+
+.letter-card p {
+  color: var(--text);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.letter-card__file {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--violet);
+  font-size: 0.9rem;
+}
+
+.letter-card img.letter-thumb {
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+  max-height: 320px;
+  width: auto;
+  object-fit: cover;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-faint);
+  padding: 3rem 1rem;
+  font-size: 0.92rem;
+}
+
+/* =========================================================================
+   UNIVERSO 3D
+   ========================================================================= */
+.universo-stage {
+  position: fixed;
+  inset: 0;
+  background: #05060f;
+}
+
+#universo-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.universo-hud {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.universo-hud .btn {
+  background: rgba(11, 12, 31, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.universo-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #05060f;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  transition: opacity 0.4s ease;
+}
+
+.universo-loading.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.universo-hint {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  background: rgba(11, 12, 31, 0.6);
+  backdrop-filter: blur(6px);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}

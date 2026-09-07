@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Mi Universo{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+    {% block navbar %}
+      {% if session.get('logueado') %}
+        <nav class="navbar">
+          <a href="{{ url_for('dashboard.index') }}" class="navbar__brand">
+            <span class="navbar__brand-dot"></span>
+            Mi Universo
+          </a>
+          <ul class="navbar__links">
+            <li><a class="navbar__link {% if request.endpoint == 'galeria.calendario' %}navbar__link--active{% endif %}" href="{{ url_for('galeria.calendario') }}">Calendario</a></li>
+            <li><a class="navbar__link {% if request.endpoint == 'cartas.index' %}navbar__link--active{% endif %}" href="{{ url_for('cartas.index') }}">Cartas</a></li>
+            <li><a class="navbar__link {% if request.endpoint == 'universo.index' %}navbar__link--active{% endif %}" href="{{ url_for('universo.index') }}">Universo</a></li>
+            <li><a class="navbar__link" href="{{ url_for('auth.logout') }}">Salir</a></li>
+          </ul>
+        </nav>
+      {% endif %}
+    {% endblock %}
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% if mensajes %}
+        <ul class="flash-list">
+          {% for categoria, mensaje in mensajes %}
+            <li class="flash flash--{{ categoria }}">{{ mensaje }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/starfield.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Universo{% endblock %}
+{% block body_class %}page-dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="hero">
+    <p class="hero-kicker">desde aquel día</p>
+    <h1>Llevamos contando cada segundo</h1>
+  </div>
+
+  <div class="counter" id="contador" data-fecha-inicio="{{ fecha_inicio }}">
+    <div class="counter__unit">
+      <span class="counter__value" data-unidad="anios">00</span>
+      <span class="counter__label">años</span>
+    </div>
+    <div class="counter__unit">
+      <span class="counter__value" data-unidad="meses">00</span>
+      <span class="counter__label">meses</span>
+    </div>
+    <div class="counter__unit">
+      <span class="counter__value" data-unidad="dias">00</span>
+      <span class="counter__label">días</span>
+    </div>
+    <div class="counter__unit">
+      <span class="counter__value" data-unidad="horas">00</span>
+      <span class="counter__label">horas</span>
+    </div>
+    <div class="counter__unit">
+      <span class="counter__value" data-unidad="minutos">00</span>
+      <span class="counter__label">min</span>
+    </div>
+    <div class="counter__unit">
+      <span class="counter__value" data-unidad="segundos">00</span>
+      <span class="counter__label">seg</span>
+    </div>
+  </div>
+
+  <div class="orbit-divider">
+    <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
+      <path d="M2 12 C 2 2, 118 2, 118 12 C 118 22, 2 22, 2 12 Z" stroke="#eab654" stroke-width="1"/>
+      <circle cx="60" cy="12" r="2.5" fill="#eab654"/>
+    </svg>
+  </div>
+
+  <div class="nav-grid">
+    <a class="nav-tile" href="{{ url_for('galeria.calendario') }}">
+      <span class="nav-tile__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="5" width="18" height="16" rx="3"/>
+          <path d="M3 9.5h18M8 3v4M16 3v4"/>
+          <circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="nav-tile__title">Calendario</span>
+      <p class="nav-tile__desc">Nuestros días marcados</p>
+    </a>
+
+    <a class="nav-tile" href="{{ url_for('cartas.index') }}">
+      <span class="nav-tile__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M3.5 6.5 12 13l8.5-6.5"/>
+        </svg>
+      </span>
+      <span class="nav-tile__title">Cartas</span>
+      <p class="nav-tile__desc">Lo que no decimos en voz alta</p>
+    </a>
+
+    <a class="nav-tile" href="{{ url_for('universo.index') }}">
+      <span class="nav-tile__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/>
+          <ellipse cx="12" cy="12" rx="10" ry="4.2"/>
+          <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/>
+          <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/>
+        </svg>
+      </span>
+      <span class="nav-tile__title">Universo</span>
+      <p class="nav-tile__desc">Tú eres mi universo</p>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/contador.js') }}"></script>
+{% endblock %}
