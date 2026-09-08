@@ -1,10 +1,10 @@
 """
 Blueprint del Universo 3D.
 
-Solo se encarga de la parte de servidor: obtener las rutas de todas las
-fotos subidas y pasárselas a la plantilla para que el JS de Three.js
-(static/js/universo3d.js) las use como texturas en el espiral de planos
-alrededor de la estrella central.
+Solo se encarga de la parte de servidor: obtener las rutas de todos los
+archivos multimedia subidos y pasárselos a la plantilla para que el JS
+de Three.js (static/js/universo3d.js) los use como texturas/videos en
+el espiral de planos alrededor de la estrella central.
 """
 
 from flask import Blueprint, render_template, url_for
@@ -20,8 +20,14 @@ universo_bp = Blueprint("universo", __name__)
 def index():
     fotos = Foto.query.order_by(Foto.fecha_asociada.asc()).all()
 
-    # Construimos URLs absolutas servibles por Flask (/static/uploads/...)
-    # para que Three.js pueda cargarlas directamente como texturas.
-    rutas_fotos = [url_for("static", filename=f.ruta_archivo) for f in fotos]
+    # Construimos un array de objetos { ruta, tipo } para que Three.js
+    # pueda distinguir entre imágenes (TextureLoader) y videos (VideoTexture).
+    media_items = [
+        {
+            "ruta": url_for("static", filename=f.ruta_archivo),
+            "tipo": f.tipo_media,
+        }
+        for f in fotos
+    ]
 
-    return render_template("universo.html", rutas_fotos=rutas_fotos)
+    return render_template("universo.html", media_items=media_items)

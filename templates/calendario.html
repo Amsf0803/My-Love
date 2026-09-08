@@ -37,7 +37,12 @@
           >
             {% if fotos_dia %}
               <span class="calendar-day__thumb">
-                <img src="{{ url_for('static', filename=fotos_dia[0].ruta_archivo) }}" alt="" loading="lazy">
+                {% if fotos_dia[0].tipo_media == 'video' %}
+                  <!-- #t=0.1 carga solo el primer frame (miniatura estática) para no gastar recursos reproduciendo -->
+                  <video src="{{ url_for('static', filename=fotos_dia[0].ruta_archivo) }}#t=0.1" preload="metadata" muted playsinline></video>
+                {% else %}
+                  <img src="{{ url_for('static', filename=fotos_dia[0].ruta_archivo) }}" alt="" loading="lazy">
+                {% endif %}
               </span>
             {% endif %}
             <span class="calendar-day__num">{{ dia }}</span>
@@ -75,11 +80,11 @@
     >
       <input type="hidden" name="fecha_asociada" id="modal-dia-fecha-input" value="">
       <div class="field">
-        <label for="archivos-fotos">Agregar foto(s) a este día</label>
-        <!-- ¡Aquí está la magia! name="archivos" y el atributo "multiple" -->
-        <input type="file" id="archivos-fotos" name="archivos" accept="image/*" multiple required>
+        <label for="archivos-fotos">Agregar foto(s) o video(s) a este día</label>
+        <!-- name="archivos" y atributo "multiple" -->
+        <input type="file" id="archivos-fotos" name="archivos" accept="image/*,video/*" multiple required>
       </div>
-      <button type="submit" class="btn btn-primary btn-block btn-sm">Subir fotos</button>
+      <button type="submit" class="btn btn-primary btn-block btn-sm">Subir archivos</button>
     </form>
 
   </div>

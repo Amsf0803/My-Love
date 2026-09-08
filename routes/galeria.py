@@ -3,10 +3,10 @@ Blueprint de Calendario / Galería.
 
 Responsabilidades:
 - Mostrar el calendario mensual, resaltando el día 3 de cada mes.
-- Servir vía JSON las fotos asociadas a un día concreto (para el modal
-  que se abre al hacer clic en un día).
-- Recibir la subida de nuevas fotos (multipart/form-data) y guardarlas
-  en /static/uploads/fotos/, registrando la ruta en MySQL.
+- Servir vía JSON los archivos multimedia asociados a un día concreto
+  (para el modal que se abre al hacer clic en un día).
+- Recibir la subida de nuevas fotos y videos (multipart/form-data) y
+  guardarlas en /static/uploads/fotos/, registrando la ruta en SQLite.
 """
 
 import calendar
@@ -39,6 +39,13 @@ def _extension_permitida(filename, extensiones_permitidas):
     )
 
 
+def _detectar_tipo_media(extension):
+    """Devuelve 'video' si la extensión pertenece a un archivo de video,
+    en caso contrario devuelve 'imagen'."""
+    video_exts = current_app.config.get("VIDEO_EXTENSIONS", {"mp4", "webm", "mov"})
+    return "video" if extension in video_exts else "imagen"
+
+
 @galeria_bp.route("/calendario")
 @login_required
 def calendario():
@@ -62,7 +69,7 @@ def calendario():
         mes -= 12
         anio += 1
 
-    # Trae solo las fotos del mes solicitado, para poder marcar en el
+    # Trae solo los archivos del mes solicitado, para poder marcar en el
     # calendario qué días ya tienen thumbnail sin hacer una consulta
     # por cada celda.
     fotos_del_mes = Foto.query.filter(
@@ -101,8 +108,9 @@ def calendario():
 @login_required
 def fotos_por_fecha(fecha_iso):
     """
-    Devuelve en JSON todas las fotos asociadas a una fecha dada
-    (formato YYYY-MM-DD). Usado por el modal del calendario vía Fetch API.
+    Devuelve en JSON todos los archivos multimedia asociados a una fecha
+    dada (formato YYYY-MM-DD). Usado por el modal del calendario vía
+    Fetch API.
     """
     try:
         fecha = date.fromisoformat(fecha_iso)
@@ -116,11 +124,12 @@ def fotos_por_fecha(fecha_iso):
 @login_required
 def subir_foto():
     """
-    Recibe múltiples fotos (multipart/form-data) junto con la fecha a la que
-    pertenecen, las guarda en disco y crea los registros en MySQL.
+    Recibe múltiples archivos multimedia (multipart/form-data) junto con
+    la fecha a la que pertenecen, los guarda en disco y crea los
+    registros en SQLite.
 
     Campos de formulario esperados:
-        - archivos: lista de ficheros de imagen (debe tener el atributo multiple en el HTML)
+        - archivos: lista de ficheros de imagen/video (atributo multiple)
         - fecha_asociada: fecha en formato YYYY-MM-DD
     """
     # 1. Usamos getlist() y buscamos 'archivos' (en plural)
@@ -129,11 +138,11 @@ def subir_foto():
 
     # Verificamos si la lista está vacía o si el primer archivo no tiene nombre
     if not archivos or (len(archivos) == 1 and archivos[0].filename == ""):
-        flash("No seleccionaste ninguna imagen.", "error")
+        flash("No seleccionaste ningún archivo.", "error")
         return redirect(request.referrer or url_for("galeria.calendario"))
 
     if not fecha_str:
-        flash("Falta la fecha asociada a las fotos.", "error")
+        flash("Falta la fecha asociada a los archivos.", "error")
         return redirect(request.referrer or url_for("galeria.calendario"))
 
     try:
@@ -146,38 +155,45 @@ def subir_foto():
     carpeta_destino = current_app.config["UPLOAD_FOLDER_FOTOS"]
     os.makedirs(carpeta_destino, exist_ok=True)
 
-    fotos_subidas = 0
+    archivos_subidos = 0
 
     # 2. Iteramos sobre cada archivo recibido
     for archivo in archivos:
         if archivo and archivo.filename != "":
             if not _extension_permitida(archivo.filename, extensiones_permitidas):
                 flash(f"Formato no permitido para: {archivo.filename}. Se omitió.", "error")
-                continue # Saltamos este archivo y pasamos al siguiente
+                continue  # Saltamos este archivo y pasamos al siguiente
 
-            # Generamos nombre seguro con UUID (tu lógica original es perfecta para esto)
+            # Generamos nombre seguro con UUID
             nombre_seguro = secure_filename(archivo.filename)
             extension = nombre_seguro.rsplit(".", 1)[1].lower()
             nombre_final = f"{uuid.uuid4().hex}.{extension}"
-            
+
             ruta_absoluta = os.path.join(carpeta_destino, nombre_final)
             archivo.save(ruta_absoluta)
 
             # Ruta relativa para BD
             ruta_relativa = f"uploads/fotos/{nombre_final}"
 
-            # Añadimos a la sesión
-            nueva_foto = Foto(ruta_archivo=ruta_relativa, fecha_asociada=fecha_asociada)
-            db.session.add(nueva_foto)
-            
-            fotos_subidas += 1
+            # Detectar tipo de media
+            tipo_media = _detectar_tipo_media(extension)
 
-    # 3. Hacemos el commit una sola vez al final, guardando todas las fotos válidas
-    if fotos_subidas > 0:
+            # Añadimos a la sesión
+            nueva_foto = Foto(
+                ruta_archivo=ruta_relativa,
+                fecha_asociada=fecha_asociada,
+                tipo_media=tipo_media,
+            )
+            db.session.add(nueva_foto)
+
+            archivos_subidos += 1
+
+    # 3. Hacemos el commit una sola vez al final, guardando todos los archivos válidos
+    if archivos_subidos > 0:
         db.session.commit()
-        flash(f"¡{fotos_subidas} foto(s) subida(s) con éxito! 📸", "success")
+        flash(f"¡{archivos_subidos} archivo(s) subido(s) con éxito! 📸", "success")
     else:
-        flash("No se pudo subir ninguna foto válida.", "error")
+        flash("No se pudo subir ningún archivo válido.", "error")
 
     return redirect(
         url_for("galeria.calendario", anio=fecha_asociada.year, mes=fecha_asociada.month)

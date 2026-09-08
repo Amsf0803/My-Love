@@ -14,7 +14,7 @@ import os
 
 from flask import Flask
 
-from config.settings import config_by_name
+from config.settings import config_by_name, INSTANCE_DIR
 from extensions import db
 
 
@@ -40,15 +40,17 @@ def create_app(config_name=None):
     app.register_blueprint(cartas_bp)
     app.register_blueprint(universo_bp)
 
-    # --- Crear tablas y carpetas de uploads si no existen ---
+    # --- Crear carpetas y tablas si no existen ---
     with app.app_context():
+        # Crea la carpeta instance/ para el archivo SQLite
+        os.makedirs(INSTANCE_DIR, exist_ok=True)
+        os.makedirs(app.config["UPLOAD_FOLDER_FOTOS"], exist_ok=True)
+        os.makedirs(app.config["UPLOAD_FOLDER_CARTAS"], exist_ok=True)
+
         # Importa los modelos para que SQLAlchemy los conozca antes de
         # crear las tablas.
         import models  # noqa: F401
         db.create_all()
-
-        os.makedirs(app.config["UPLOAD_FOLDER_FOTOS"], exist_ok=True)
-        os.makedirs(app.config["UPLOAD_FOLDER_CARTAS"], exist_ok=True)
 
     return app
 

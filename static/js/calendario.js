@@ -1,7 +1,10 @@
 /**
  * Calendario: al hacer clic en un día, abre un modal que carga
- * dinámicamente (vía Fetch API) las fotos asociadas a esa fecha, y deja
- * listo el formulario de subida con la fecha correcta ya seleccionada.
+ * dinámicamente (vía Fetch API) los archivos multimedia asociados a esa
+ * fecha, y deja listo el formulario de subida con la fecha correcta ya
+ * seleccionada.
+ *
+ * Soporta imágenes (<img>) y videos (<video>) según el campo tipo_media.
  */
 (function () {
   const overlay = document.getElementById("modal-dia");
@@ -22,6 +25,33 @@
   function formatearTitulo(fechaISO) {
     const [anio, mes, dia] = fechaISO.split("-").map(Number);
     return `${dia} de ${MESES_LARGO[mes - 1]}, ${anio}`;
+  }
+
+  /**
+   * Crea el elemento HTML adecuado según el tipo de media.
+   *  - imagen  → <img>
+   *  - video   → <video controls loop preload="metadata">
+   */
+  function crearElementoMedia(item, fechaISO) {
+    if (item.tipo_media === "video") {
+      const video = document.createElement("video");
+      video.src = `/static/${item.ruta_archivo}`;
+      video.controls = true;
+      video.loop = true;
+      video.preload = "metadata";
+      video.playsInline = true;
+      video.setAttribute("playsinline", "");
+      video.style.maxWidth = "100%";
+      video.style.borderRadius = "8px";
+      return video;
+    }
+
+    // Por defecto: imagen
+    const img = document.createElement("img");
+    img.src = `/static/${item.ruta_archivo}`;
+    img.alt = `Foto del ${fechaISO}`;
+    img.loading = "lazy";
+    return img;
   }
 
   function abrirModal(fechaISO) {
@@ -48,20 +78,23 @@
         }
 
         contenedorFotos.hidden = false;
-        for (const foto of fotos) {
-          const img = document.createElement("img");
-          img.src = `/static/${foto.ruta_archivo}`;
-          img.alt = `Foto del ${fechaISO}`;
-          img.loading = "lazy";
-          contenedorFotos.appendChild(img);
+        for (const item of fotos) {
+          const el = crearElementoMedia(item, fechaISO);
+          contenedorFotos.appendChild(el);
         }
       })
       .catch(() => {
-        loading.textContent = "No se pudieron cargar las fotos.";
+        loading.textContent = "No se pudieron cargar los archivos.";
       });
   }
 
   function cerrarModal() {
+    // Pausar todos los videos al cerrar el modal
+    contenedorFotos.querySelectorAll("video").forEach((v) => {
+      v.pause();
+      v.currentTime = 0;
+    });
+
     overlay.classList.remove("is-open");
     document.body.style.overflow = "";
   }
