@@ -20,12 +20,12 @@ universo_bp = Blueprint("universo", __name__)
 def index():
     fotos = Foto.query.order_by(Foto.fecha_asociada.asc()).all()
 
-    # Construimos un array de objetos { ruta, tipo } para que Three.js
+    # Construimos un array de objetos { ruta_archivo, tipo_media } para que Three.js
     # pueda distinguir entre imágenes (TextureLoader) y videos (VideoTexture).
     media_items = [
         {
-            "ruta": url_for("static", filename=f.ruta_archivo),
-            "tipo": f.tipo_media,
+            "ruta_archivo": url_for("static", filename=f.ruta_archivo),
+            "tipo_media": f.tipo_media,
         }
         for f in fotos
     ]

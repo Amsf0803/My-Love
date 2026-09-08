@@ -12,7 +12,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-// Ahora recibimos objetos con { ruta, tipo }
+// Ahora recibimos objetos con { ruta_archivo, tipo_media }
 const mediaItems = window.MEDIA_ITEMS || [];
 
 const canvas = document.getElementById("universo-canvas");
@@ -228,10 +228,10 @@ function crearMarcoMedia(item, indice) {
   );
   grupo.add(foto);
 
-  if (item.tipo === "video") {
+  if (item.tipo_media === "video") {
     // Es un video: crear elemento, configurarlo para autoplay y extraer VideoTexture
     const videoElement = document.createElement("video");
-    videoElement.src = item.ruta;
+    videoElement.src = item.ruta_archivo;
     videoElement.muted = true; // Obligatorio para autoplay
     videoElement.loop = true;
     videoElement.autoplay = true;
@@ -263,7 +263,7 @@ function crearMarcoMedia(item, indice) {
   } else {
     // Es una imagen: cargar textura normal
     cargadorTexturas.load(
-      item.ruta,
+      item.ruta_archivo,
       (textura) => {
         const aspecto = textura.image.width / textura.image.height;
         if (aspecto >= 1) {
