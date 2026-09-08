@@ -46,7 +46,10 @@ class Config:
     # Formato ISO: YYYY-MM-DD. Aniversario: 3 de julio de 2026.
     FECHA_INICIO_RELACION = os.environ.get("FECHA_INICIO_RELACION", "2026-07-03")
 
-    # --- Base de datos SQLite (SQLAlchemy) ---
+    # --- Base de datos (SQLAlchemy) ---
+    # Por defecto usa SQLite en la carpeta instance.
+    # En PythonAnywhere, puedes sobreescribir esta variable en instance/config.py 
+    # con tu URI de MySQL: "mysql+pymysql://usuario:contraseña@servidor/bd"
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
         "sqlite:///" + os.path.join(INSTANCE_DIR, "mi_universo.db"),

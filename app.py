@@ -21,8 +21,12 @@ from extensions import db
 def create_app(config_name=None):
     config_name = config_name or os.environ.get("FLASK_ENV", "development")
 
-    app = Flask(__name__)
+    app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_by_name[config_name])
+    
+    # Cargar configuraciones sensibles (como la URI de MySQL) desde instance/config.py
+    # si el archivo existe. Esto es ideal para PythonAnywhere.
+    app.config.from_pyfile("config.py", silent=True)
 
     # --- Inicializar extensiones ---
     db.init_app(app)
