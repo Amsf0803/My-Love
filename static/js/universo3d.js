@@ -3,17 +3,19 @@
  *
  * - Una estrella emisiva en el centro, con un halo de brillo.
  * - Un texto 3D flotante ("Tú eres mi universo") que siempre mira a la
- *   cámara, renderizado como textura de canvas sobre un plano.
- * - Los archivos multimedia (fotos y VIDEOS) se posicionan matemáticamente
- *   formando un espiral ascendente que orbita alrededor de la estrella.
+ *   cámara, renderizado como textura de canvas sobre un plano (más
+ *   liviano y fiable que cargar una fuente tipográfica para geometría 3D).
+ * - Las fotos subidas se posicionan matemáticamente formando un espiral
+ *   ascendente que orbita alrededor de la estrella, cada una con un
+ *   pequeño marco.
  * - OrbitControls para rotar y hacer zoom.
  */
 
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-// Ahora recibimos objetos con { ruta_archivo, tipo_media }
-const mediaItems = window.MEDIA_ITEMS || [];
+// Compatible con la nueva estructura de JSON y la antigua
+const rutasFotos = window.MEDIA_ITEMS || window.RUTAS_FOTOS || [];
 
 const canvas = document.getElementById("universo-canvas");
 const loadingOverlay = document.getElementById("universo-loading");
@@ -51,7 +53,6 @@ window.addEventListener("resize", () => {
 
 // --- Fondo de estrellas lejanas (Multicapa y Brillantes) -------------------
 
-// 1. Creamos una textura circular difuminada
 function crearTexturaEstrella() {
   const canvas = document.createElement("canvas");
   canvas.width = 32;
@@ -75,15 +76,15 @@ function crearCampoDeEstrellas(cantidad, radio, colorHex, tamaño) {
     const r = radio * (0.2 + Math.random() * 0.8);
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
-    
+
     posiciones[i * 3] = r * Math.sin(phi) * Math.cos(theta);
     posiciones[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
     posiciones[i * 3 + 2] = r * Math.cos(phi);
   }
-  
+
   const geometria = new THREE.BufferGeometry();
   geometria.setAttribute("position", new THREE.BufferAttribute(posiciones, 3));
-  
+
   const material = new THREE.PointsMaterial({
     color: colorHex,
     size: tamaño,
@@ -93,7 +94,7 @@ function crearCampoDeEstrellas(cantidad, radio, colorHex, tamaño) {
     blending: THREE.AdditiveBlending,
     depthWrite: false,
   });
-  
+
   return new THREE.Points(geometria, material);
 }
 
@@ -145,8 +146,7 @@ grupoEstrella.add(luzEstrella);
 scene.add(grupoEstrella);
 scene.add(new THREE.AmbientLight(0x30264f, 1.1));
 
-
-// --- Texto 3D flotante: "Tú eres mi universo" -------------------------------
+// --- Texto 3D flotante -------------------------------
 function crearTextoFlotante(texto, { colorTexto = "#f4f2ee", tamañoFuente = 64 } = {}) {
   const lienzo = document.createElement("canvas");
   const ctx = lienzo.getContext("2d");
@@ -161,6 +161,7 @@ function crearTextoFlotante(texto, { colorTexto = "#f4f2ee", tamañoFuente = 64 
   ctx.shadowBlur = 26;
   ctx.fillStyle = colorTexto;
   ctx.fillText(texto, lienzo.width / 2, lienzo.height / 2);
+
   ctx.shadowBlur = 10;
   ctx.fillText(texto, lienzo.width / 2, lienzo.height / 2);
 
@@ -180,12 +181,11 @@ const textoFlotante = crearTextoFlotante("Tú eres mi universo");
 textoFlotante.position.set(0, 2.6, 0);
 scene.add(textoFlotante);
 
-
-// --- Archivos multimedia en espiral (Formación de Galaxia) -------------------
+// --- Fotos en espiral (Formación de Galaxia) ---------------------------------
 const grupoFotos = new THREE.Group();
 scene.add(grupoFotos);
 
-const ANGULO_DORADO = Math.PI * (3 - Math.sqrt(5)); // ~137.5°
+const ANGULO_DORADO = Math.PI * (3 - Math.sqrt(5));
 const RADIO_BASE = 3.5;
 const ESPACIADO = 1.3;
 
@@ -203,17 +203,16 @@ function posicionarEnGalaxia(indice) {
 
 const cargadorTexturas = new THREE.TextureLoader();
 
-function crearMarcoMedia(item, indice) {
+function crearMarcoFoto(item, indice) {
   const grupo = new THREE.Group();
   const { x, y, z } = posicionarEnGalaxia(indice);
-  
+
   grupo.position.set(x, y, z);
   grupo.lookAt(0, y, 0);
   grupo.rotateY(Math.PI);
   grupo.rotateX((Math.random() - 0.5) * 0.3);
   grupo.rotateZ((Math.random() - 0.5) * 0.1);
 
-  // Marco dorado
   const marco = new THREE.Mesh(
     new THREE.PlaneGeometry(1.34, 1.34),
     new THREE.MeshBasicMaterial({ color: 0xeab654 })
@@ -221,34 +220,33 @@ function crearMarcoMedia(item, indice) {
   marco.position.z = -0.02;
   grupo.add(marco);
 
-  // Placeholder oscuro para el contenido
   const foto = new THREE.Mesh(
     new THREE.PlaneGeometry(1.2, 1.2),
     new THREE.MeshBasicMaterial({ color: 0x1c1e3d, side: THREE.DoubleSide })
   );
   grupo.add(foto);
 
-  if (item.tipo_media === "video") {
-    // Es un video: crear elemento, configurarlo para autoplay y extraer VideoTexture
-    const videoElement = document.createElement("video");
-    videoElement.src = item.ruta_archivo;
-    videoElement.muted = true; // Obligatorio para autoplay
-    videoElement.loop = true;
-    videoElement.autoplay = true;
-    videoElement.playsInline = true;
-    videoElement.setAttribute("playsinline", "");
-    videoElement.crossOrigin = "anonymous";
-    
-    // Iniciar reproducción
-    videoElement.play().catch(e => console.warn("Autoplay bloqueado:", e));
+  // Extraer ruta limpia
+  const ruta = typeof item === 'object' ? (item.ruta_archivo || item.ruta) : item;
+  const esVideo = typeof ruta === 'string' && ruta.match(/\.(mp4|webm|mov|mkv)$/i);
 
-    const texturaVideo = new THREE.VideoTexture(videoElement);
+  if (esVideo) {
+    const video = document.createElement('video');
+    video.src = `/static/${ruta}`;
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.autoplay = true;
+    video.play().catch(e => console.warn("El navegador pausó el autoplay del video:", e));
+
+    const texturaVideo = new THREE.VideoTexture(video);
     texturaVideo.minFilter = THREE.LinearFilter;
     texturaVideo.magFilter = THREE.LinearFilter;
-    
-    // Esperar a que cargue la metadata para saber la resolución del video
-    videoElement.addEventListener("loadedmetadata", () => {
-      const aspecto = videoElement.videoWidth / videoElement.videoHeight;
+
+    // Ajuste de escala cuando carguen los metadatos
+    video.addEventListener('loadedmetadata', () => {
+      const aspecto = video.videoWidth / video.videoHeight;
       if (aspecto >= 1) {
         foto.scale.set(1, 1 / aspecto, 1);
       } else {
@@ -259,11 +257,9 @@ function crearMarcoMedia(item, indice) {
     foto.material.map = texturaVideo;
     foto.material.color.set(0xffffff);
     foto.material.needsUpdate = true;
-    
   } else {
-    // Es una imagen: cargar textura normal
     cargadorTexturas.load(
-      item.ruta_archivo,
+      `/static/${ruta}`,
       (textura) => {
         const aspecto = textura.image.width / textura.image.height;
         if (aspecto >= 1) {
@@ -277,7 +273,7 @@ function crearMarcoMedia(item, indice) {
       },
       undefined,
       () => {
-        foto.material.color.set(0x2a2c52); // color de error
+        foto.material.color.set(0x2a2c52);
       }
     );
   }
@@ -285,10 +281,9 @@ function crearMarcoMedia(item, indice) {
   return grupo;
 }
 
-
-if (mediaItems.length > 0) {
-  mediaItems.forEach((item, indice) => {
-    grupoFotos.add(crearMarcoMedia(item, indice));
+if (rutasFotos.length > 0) {
+  rutasFotos.forEach((item, indice) => {
+    grupoFotos.add(crearMarcoFoto(item, indice));
   });
 } else {
   const invitacion = crearTextoFlotante("Sube fotos desde el calendario", {
