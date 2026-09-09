@@ -238,6 +238,7 @@ function crearMarcoFoto(item, indice) {
     video.muted = true;
     video.playsInline = true;
     video.autoplay = true;
+    video.preload = "auto"; // <-- ESTA LÍNEA ARREGLA EL PREVIEW NEGRO
     video.play().catch(e => console.warn("El navegador pausó el autoplay del video:", e));
 
     const texturaVideo = new THREE.VideoTexture(video);

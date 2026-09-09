@@ -34,9 +34,10 @@
   }
 </script>
 <script>
-  // Archivos multimedia subidos, generados por Flask a partir de la BD.
-  // Cada elemento tiene { ruta_archivo: "/static/...", tipo_media: "imagen"|"video" }.
-  // Three.js los usará como texturas o VideoTexture en el espiral.
+  // Elementos multimedia (fotos y videos) subidos, generados por Flask a
+  // partir de la BD. Three.js las usará como texturas en el espiral de
+  // planos. Cada item trae { id, ruta_archivo, fecha_asociada,
+  // fecha_subida, tipo_media }.
   window.MEDIA_ITEMS = {{ media_items | tojson }};
 </script>
 <script type="module" src="{{ url_for('static', filename='js/universo3d.js') }}"></script>

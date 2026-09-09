@@ -14,21 +14,22 @@ import os
 
 from flask import Flask
 
-from config.settings import config_by_name, INSTANCE_DIR
+from config.settings import config_by_name
 from extensions import db
 
 
 def create_app(config_name=None):
     config_name = config_name or os.environ.get("FLASK_ENV", "development")
 
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
-    
-    # Cargar configuraciones sensibles (como la URI de MySQL) desde instance/config.py
-    # si el archivo existe. Esto es ideal para PythonAnywhere.
-    app.config.from_pyfile("config.py", silent=True)
 
-    # --- Inicializar extensiones ---
+    # --- FORZAR SQLITE EN PYTHONANYWHERE ---
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'mi_universo.db')
+    # --------------------------------------
+
     db.init_app(app)
 
     # --- Registrar Blueprints ---
@@ -44,17 +45,15 @@ def create_app(config_name=None):
     app.register_blueprint(cartas_bp)
     app.register_blueprint(universo_bp)
 
-    # --- Crear carpetas y tablas si no existen ---
+    # --- Crear tablas y carpetas de uploads si no existen ---
     with app.app_context():
-        # Crea la carpeta instance/ para el archivo SQLite
-        os.makedirs(INSTANCE_DIR, exist_ok=True)
-        os.makedirs(app.config["UPLOAD_FOLDER_FOTOS"], exist_ok=True)
-        os.makedirs(app.config["UPLOAD_FOLDER_CARTAS"], exist_ok=True)
-
         # Importa los modelos para que SQLAlchemy los conozca antes de
         # crear las tablas.
         import models  # noqa: F401
         db.create_all()
+
+        os.makedirs(app.config["UPLOAD_FOLDER_FOTOS"], exist_ok=True)
+        os.makedirs(app.config["UPLOAD_FOLDER_CARTAS"], exist_ok=True)
 
     return app
 
