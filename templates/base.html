@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Mi Universo{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/flores-amarillas.css') }}">
   {% block head_extra %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -22,11 +23,24 @@
             <li><a class="navbar__link {% if request.endpoint == 'galeria.calendario' %}navbar__link--active{% endif %}" href="{{ url_for('galeria.calendario') }}">Calendario</a></li>
             <li><a class="navbar__link {% if request.endpoint == 'cartas.index' %}navbar__link--active{% endif %}" href="{{ url_for('cartas.index') }}">Cartas</a></li>
             <li><a class="navbar__link {% if request.endpoint == 'universo.index' %}navbar__link--active{% endif %}" href="{{ url_for('universo.index') }}">Universo</a></li>
+            <li><a class="navbar__link {% if request.endpoint == 'jardin.index' %}navbar__link--active{% endif %}" href="{{ url_for('jardin.index') }}">Jardín</a></li>
             <li><a class="navbar__link" href="{{ url_for('auth.logout') }}">Salir</a></li>
           </ul>
         </nav>
       {% endif %}
     {% endblock %}
+
+
+<style>
+
+  /* 
+  Quite este del navbar en lo q queda bien lo del armario
+  <li><a class="navbar__link {% if request.endpoint == 'armario.index' or request.endpoint == 'armario.calendario' %}navbar__link--active{% endif %}" href="{{ url_for('armario.index') }}">Armario</a></li>
+
+
+  */
+
+</style>
 
     {% with mensajes = get_flashed_messages(with_categories=true) %}
       {% if mensajes %}

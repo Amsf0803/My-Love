@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Calendario de Outfits | Mi Universo{% endblock %}
+{% block body_class %}page-calendario{% endblock %}
+
+{% block content %}
+<div class="container container--wide">
+  <div class="calendar-header" style="justify-content: center; margin-bottom: 1rem;">
+      <h1 style="text-align: center;">Tu Armario Virtual</h1>
+  </div>
+  
+  <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+      <div class="tabs">
+          <a href="{{ url_for('armario.index') }}" class="tab-btn">Armar Outfit</a>
+          <a href="{{ url_for('armario.calendario') }}" class="tab-btn" style="border-bottom-color: var(--gold); color: var(--text);">Calendario de Ropa</a>
+      </div>
+  </div>
+
+  <div class="calendar-header">
+    <h2 style="font-size: 1.5rem; margin:0;">{{ nombre_mes }} {{ anio }}</h2>
+    <div class="calendar-nav">
+      <a href="{{ url_for('armario.calendario', anio=anio_mes_anterior, mes=mes_anterior) }}" aria-label="Mes anterior">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <a href="{{ url_for('armario.calendario', anio=anio_mes_siguiente, mes=mes_siguiente) }}" aria-label="Mes siguiente">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="calendar-grid">
+    {% for etiqueta in ['L', 'M', 'X', 'J', 'V', 'S', 'D'] %}
+      <div class="calendar-weekday">{{ etiqueta }}</div>
+    {% endfor %}
+
+    {% for semana in semanas %}
+      {% for dia in semana %}
+        {% if dia == 0 %}
+          <div class="calendar-day calendar-day--empty"></div>
+        {% else %}
+          {% set es_hoy = (hoy.year == anio and hoy.month == mes and hoy.day == dia) %}
+          {% set outfits_del_dia = outfits_por_dia.get(dia, []) %}
+          <button
+            type="button"
+            class="calendar-day {% if es_hoy %}calendar-day--hoy{% endif %}"
+            onclick="abrirModalDia('{{ anio }}-{{ "%02d" % mes }}-{{ "%02d" % dia }}')"
+          >
+            <span class="calendar-day__num">{{ dia }}</span>
+            {% if outfits_del_dia %}
+              <div style="font-size: 0.6rem; color: var(--gold); margin-top: 5px; text-align: center; line-height: 1.1;">
+                {{ outfits_del_dia[0] }}
+                {% if outfits_del_dia|length > 1 %}
+                <br>+{{ outfits_del_dia|length - 1 }} más
+                {% endif %}
+              </div>
+            {% endif %}
+          </button>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <div class="calendar-legend">
+    <span><span class="legend-dot legend-dot--hoy"></span> Hoy</span>
+  </div>
+</div>
+
+<!-- Modal para asignar outfit al día -->
+<div class="modal-overlay" id="modal-outfit-dia">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 id="modal-titulo">Outfits para este día</h2>
+      <button type="button" class="modal__close" onclick="cerrarModalDia()" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Asignar Outfit</label>
+      <select id="select-outfit" style="background:var(--bg); border:1px solid var(--border-strong); padding:0.6rem; border-radius:var(--radius-sm); color:var(--text); width: 100%;">
+        <!-- Se llenará con JS -->
+      </select>
+    </div>
+    
+    <button class="btn btn-primary btn-block btn-sm" onclick="asignarOutfit()">Guardar</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let fechaSeleccionada = '';
+
+  function abrirModalDia(fecha) {
+    fechaSeleccionada = fecha;
+    document.getElementById('modal-titulo').innerText = 'Outfits para ' + fecha;
+    
+    // Cargar outfits disponibles para el select (idealmente de una ruta API, pero mockearemos o haremos fetch)
+    fetch('/armario/api/outfits')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('select-outfit');
+        select.innerHTML = '<option value="">Selecciona un outfit...</option>';
+        data.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o.id;
+          opt.innerText = o.nombre;
+          select.appendChild(opt);
+        });
+        document.getElementById('modal-outfit-dia').classList.add('is-open');
+      })
+      .catch(err => console.error('Error fetching outfits:', err));
+  }
+
+  function cerrarModalDia() {
+    document.getElementById('modal-outfit-dia').classList.remove('is-open');
+  }
+
+  function asignarOutfit() {
+    const outfitId = document.getElementById('select-outfit').value;
+    if(!outfitId) {
+      alert("Selecciona un outfit");
+      return;
+    }
+    
+    fetch('/armario/api/calendario/asignar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fecha: fechaSeleccionada,
+        outfit_id: outfitId
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.success) {
+        window.location.reload();
+      } else {
+        alert("Error al asignar: " + data.error);
+      }
+    });
+  }
+</script>
+{% endblock %}

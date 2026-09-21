@@ -1,0 +1,176 @@
+/* =========================================================================
+   JARDÍN — hoja de estilos
+   -------------------------------------------------------------------------
+   Sección escalable de "flores plantadas". Cada tarjeta contiene:
+     1. Un SVG de flor que se DIBUJA con stroke-dasharray.
+     2. Una imagen real que se REVELA al terminar la animación.
+     3. Textos (fecha, título, mensaje) que aparecen con delay.
+
+   Todos los selectores están bajo .page-jardin o .jardin-* / .flor-*
+   para evitar colisiones con el CSS global existente.
+   ========================================================================= */
+
+/* --- Grid del jardín --- */
+.jardin-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  max-width: 520px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+/* 2 columnas en pantallas medianas y anchas (para que queden lado a lado) */
+@media (min-width: 680px) {
+  .jardin-grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 880px;
+    gap: 2rem;
+  }
+}
+
+/* --- Tarjeta de flor --- */
+.flor-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.flor-card:hover {
+  border-color: var(--acento, var(--gold));
+  transform: translateY(-3px);
+}
+
+/* --- Zona visual (SVG + imagen apiladas) --- */
+.flor-card__visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* --- SVG superpuesto (capa de boceto) --- */
+.flor-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 0.8s ease;
+}
+
+/*
+ * EFECTO DE DIBUJO (stroke-dasharray / stroke-dashoffset)
+ * -------------------------------------------------------
+ * --stroke-length es el largo total del path.
+ * Se calcula con JS (getTotalLength) y se inyecta como variable CSS
+ * en cada <path> para precisión. Como fallback usamos 600.
+ *
+ * Estado inicial:  dashoffset = dasharray  → invisible.
+ * Estado animado:  dashoffset = 0          → completamente visible.
+ */
+.flor-svg__path {
+  fill: none;
+  stroke-dasharray: var(--stroke-length, 600);
+  stroke-dashoffset: var(--stroke-length, 600);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* No empieza hasta que Intersection Observer la active */
+}
+
+/* Cuando la tarjeta recibe la clase .dibujando, inicia la animación */
+.flor-card.dibujando .flor-svg__path {
+  animation: dibujar-trazo 2.5s ease forwards;
+}
+
+@keyframes dibujar-trazo {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Cuando pasa a .revelado, el SVG se desvanece */
+.flor-card.revelado .flor-svg {
+  opacity: 0;
+}
+
+/* --- Imagen real (oculta hasta revelación) --- */
+.flor-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.flor-card.revelado .flor-card__img {
+  opacity: 1;
+}
+
+/* --- Cuerpo de textos --- */
+.flor-card__body {
+  padding: 1.4rem 1.6rem 1.6rem;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s;
+}
+
+.flor-card.revelado .flor-card__body {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.flor-card__fecha {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.flor-card__titulo {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--acento, var(--gold));
+  margin: 0 0 0.6rem;
+}
+
+.flor-card__mensaje {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* --- Accesibilidad: respetar movimiento reducido --- */
+@media (prefers-reduced-motion: reduce) {
+  .flor-svg__path {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+
+  .flor-card__img {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+
+  .flor-card__body {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .flor-svg {
+    opacity: 0 !important;
+    transition: none !important;
+  }
+}

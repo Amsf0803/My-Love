@@ -38,12 +38,16 @@ def create_app(config_name=None):
     from routes.galeria import galeria_bp
     from routes.cartas import cartas_bp
     from routes.universo import universo_bp
+    from routes.armario import armario_bp
+    from routes.jardin import jardin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(galeria_bp)
     app.register_blueprint(cartas_bp)
     app.register_blueprint(universo_bp)
+    app.register_blueprint(armario_bp)
+    app.register_blueprint(jardin_bp)
 
     # --- Crear tablas y carpetas de uploads si no existen ---
     with app.app_context():

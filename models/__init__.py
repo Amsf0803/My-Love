@@ -6,5 +6,6 @@ cuando se importa el paquete `models`. Esto es importante para que
 
 from .foto import Foto
 from .carta import Carta
+from .armario import Prenda, Outfit, OutfitPrenda, OutfitCalendario
 
-__all__ = ["Foto", "Carta"]
+__all__ = ["Foto", "Carta", "Prenda", "Outfit", "OutfitPrenda", "OutfitCalendario"]
