@@ -101,6 +101,39 @@
           <path class="flor-svg__path" d="M44 72 C40 66, 48 66, 44 72 C50 68, 50 76, 44 72 C48 78, 40 78, 44 72 C38 76, 38 68, 44 72Z" stroke="var(--acento)" stroke-width="1.2"/>
           <path class="flor-svg__path" d="M156 72 C152 66, 160 66, 156 72 C162 68, 162 76, 156 72 C160 78, 152 78, 156 72 C150 76, 150 68, 156 72Z" stroke="var(--acento)" stroke-width="1.2"/>
         </svg>
+        {% elif flor.tipo == 'tulipan' %}
+        {# SVG boceto de Tulipán: copa estilizada, pétalos envolventes y hojas largas lanceoladas #}
+        <svg class="flor-svg" viewBox="0 0 200 260" fill="none"
+             xmlns="http://www.w3.org/2000/svg"
+             preserveAspectRatio="xMidYMid meet"
+             aria-hidden="true">
+          {# Tallo esbelto #}
+          <path class="flor-svg__path" d="M100 115 C99 155, 98 200, 100 248" stroke="var(--acento)" stroke-width="1.6"/>
+
+          {# Hoja izquierda estilizada envuelta al tallo #}
+          <path class="flor-svg__path" d="M99 225 C65 190, 52 140, 72 90 C80 125, 90 170, 99 205Z" stroke="var(--acento)" stroke-width="1.3"/>
+          <path class="flor-svg__path" d="M99 225 C75 175, 66 135, 72 90" stroke="var(--acento)" stroke-width="1.1"/>
+
+          {# Hoja derecha estilizada #}
+          <path class="flor-svg__path" d="M101 210 C125 180, 140 145, 130 110 C120 140, 112 175, 101 195Z" stroke="var(--acento)" stroke-width="1.3"/>
+          <path class="flor-svg__path" d="M101 210 C122 170, 132 140, 130 110" stroke="var(--acento)" stroke-width="1.1"/>
+
+          {# Pétalo de fondo (interior de la copa) #}
+          <path class="flor-svg__path" d="M86 58 C93 42, 107 42, 114 58" stroke="var(--acento)" stroke-width="1.3"/>
+
+          {# Pétalo lateral izquierdo #}
+          <path class="flor-svg__path" d="M100 115 C75 105, 62 80, 72 55 C82 72, 92 90, 98 112" stroke="var(--acento)" stroke-width="1.4"/>
+
+          {# Pétalo lateral derecho #}
+          <path class="flor-svg__path" d="M100 115 C125 105, 138 80, 128 55 C118 72, 108 90, 102 112" stroke="var(--acento)" stroke-width="1.4"/>
+
+          {# Pétalo frontal central (la clásica copa del tulipán) #}
+          <path class="flor-svg__path" d="M100 115 C82 108, 80 80, 92 50 C96 48, 104 48, 108 50 C120 80, 118 108, 100 115Z" stroke="var(--acento)" stroke-width="1.5"/>
+
+          {# Líneas interiores del pétalo central #}
+          <path class="flor-svg__path" d="M92 50 C95 72, 96 95, 100 115" stroke="var(--acento)" stroke-width="1.1"/>
+          <path class="flor-svg__path" d="M108 50 C105 72, 104 95, 100 115" stroke="var(--acento)" stroke-width="1.1"/>
+        </svg>
         {% else %}
         {# SVG boceto de flor genérica/amarilla — se dibuja con animación #}
         <svg class="flor-svg" viewBox="0 0 200 260" fill="none"

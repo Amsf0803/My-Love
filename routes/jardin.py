@@ -62,7 +62,35 @@ FLORES = [
             "Te amoooo. Muaaak"
         ),
         "imagen": "hortensias-azules.webp",
-        "color_acento": "#5ea3fa",
+        "color_acento": "#8c7ae6",
+    },
+
+    {
+        "id": 3,
+        "tipo": "tulipan",
+        "fecha": "21 de septiembre, 2026",
+        "titulo": "Las primeras flores que te di",
+        "mensaje": (
+            "Aunque no fueron las más bonitas siento que son las que empezaron todo, "
+            "Te amoo demasiado y estas flores fueron las primeras de infinitas que te dare "
+            "por el resto de nuestra vida y las demás si seran más lindas lo juro jejeje."
+        ),
+        "imagen": "tulipanes-1.jpeg",
+        "color_acento": "#f478a7",
+    },
+    {
+        "id": 4,
+        "tipo": "hortensia",
+        "fecha": "21 de septiembre, 2026",
+        "titulo": "Unas flores igual de lindas que tu.",
+        "mensaje": (
+            "Estas espero que si hayan sido más lindas jejeje. "
+            "Sabes toda la historia detras de estas y cada que las veia solo podia pensar en algo "
+            "y eso era como te verias con ellas, lo hermosa que te verias junto a unas flores igual de lindas que tu. "
+            "Aunque cuando te las di me di cuenta que no hay nada en este mundo más lindo que tu, te amooo muchoo amor. Muaaaaak"
+        ),
+        "imagen": "hortencias-1.jpeg",
+        "color_acento": "#ba75ff",
     },
     # ------------------------------------------------------------------
     #  ¿Quieres plantar otra flor?  Copia este bloque y llena los campos:
