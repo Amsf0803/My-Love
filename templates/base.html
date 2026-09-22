@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}Mi Universo{% endblock %}</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/Iset/icon.png') }}">
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='img/Iset/icon.png') }}">
@@ -21,7 +21,13 @@
             <span class="navbar__brand-dot"></span>
             Mi Universo
           </a>
-          <ul class="navbar__links">
+          <button class="navbar__toggle" id="navbarToggle" type="button" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="navbarLinks">
+            <span class="navbar__toggle-bar"></span>
+            <span class="navbar__toggle-bar"></span>
+            <span class="navbar__toggle-bar"></span>
+          </button>
+          <div class="navbar__overlay" id="navbarOverlay" tabindex="-1"></div>
+          <ul class="navbar__links" id="navbarLinks">
             <li><a class="navbar__link {% if request.endpoint == 'galeria.calendario' %}navbar__link--active{% endif %}" href="{{ url_for('galeria.calendario') }}">Calendario</a></li>
             <li><a class="navbar__link {% if request.endpoint == 'cartas.index' %}navbar__link--active{% endif %}" href="{{ url_for('cartas.index') }}">Cartas</a></li>
             <li><a class="navbar__link {% if request.endpoint == 'universo.index' %}navbar__link--active{% endif %}" href="{{ url_for('universo.index') }}">Universo</a></li>
@@ -60,6 +66,7 @@
   </div>
 
   <script src="{{ url_for('static', filename='js/starfield.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

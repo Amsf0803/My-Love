@@ -42,24 +42,38 @@
   --shadow-elevated: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
 }
 
-/* --- Reset basico --- */
-* {
+/* --- Reset basico y proteccion contra scroll horizontal --- */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
 html {
   color-scheme: dark;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
+img, picture, video, canvas, svg {
+  max-width: 100%;
 }
 
 h1, h2, h3 {
@@ -149,6 +163,8 @@ main {
 
 /* --- Navegacion --- */
 .navbar {
+  position: relative;
+  z-index: 60;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -165,6 +181,7 @@ main {
   font-family: var(--font-display);
   font-size: 1.05rem;
   color: var(--text);
+  z-index: 65;
 }
 
 .navbar__brand-dot {
@@ -173,6 +190,64 @@ main {
   border-radius: 50%;
   background: var(--gold);
   box-shadow: 0 0 12px 2px var(--gold-soft);
+}
+
+/* Boton hamburguesa (oculto en pantallas mayores a 768px) */
+.navbar__toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  z-index: 65;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.navbar__toggle:hover {
+  border-color: var(--gold);
+  background: var(--bg-elevated);
+}
+
+.navbar__toggle-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: var(--text);
+  border-radius: 2px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease;
+}
+
+/* Animacion a icono de cruz (X) */
+.navbar__toggle[aria-expanded="true"] .navbar__toggle-bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.navbar__toggle[aria-expanded="true"] .navbar__toggle-bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.navbar__toggle[aria-expanded="true"] .navbar__toggle-bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Telon de fondo (overlay) */
+.navbar__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 15, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 61;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .navbar__links {
@@ -205,6 +280,53 @@ main {
 .navbar__link--active:hover {
   color: var(--bg);
   background: var(--gold);
+}
+
+/* Reglas movil para navegacion */
+@media (max-width: 768px) {
+  .navbar__toggle {
+    display: flex;
+  }
+
+  .navbar__overlay.is-active {
+    display: block;
+    opacity: 1;
+  }
+
+  .navbar__links {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(80vw, 300px);
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(20, 21, 47, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-left: 1px solid var(--border-strong);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    z-index: 62;
+    padding: calc(4.5rem + env(safe-area-inset-top, 0px)) 1.5rem 2rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    overflow-y: auto;
+  }
+
+  .navbar__links.is-open {
+    transform: translateX(0);
+  }
+
+  .navbar__link {
+    width: 100%;
+    padding: 0.85rem 1.15rem;
+    font-size: 1rem;
+    border-radius: var(--radius-sm);
+  }
 }
 
 /* --- Flash messages --- */
@@ -269,6 +391,54 @@ main {
 
 .btn-block { width: 100%; }
 .btn-sm { padding: 0.45rem 0.9rem; font-size: 0.82rem; }
+
+/* --- Boton Flotante (FAB) seguro para moviles --- */
+.btn-flotante,
+.fab {
+  position: fixed;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  right: calc(1.25rem + env(safe-area-inset-right, 0px));
+  z-index: 45; /* Por debajo de modales (50) y menu drawer (60+) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0.85rem 1.35rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #241a06;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 8px 24px -4px rgba(234, 182, 84, 0.4),
+              0 4px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-flotante:hover,
+.fab:hover {
+  transform: translateY(-2px);
+  background: #f1c874;
+  box-shadow: 0 12px 28px -4px rgba(234, 182, 84, 0.55),
+              0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.btn-flotante:active,
+.fab:active {
+  transform: translateY(0) scale(0.96);
+}
+
+@media (max-width: 480px) {
+  .btn-flotante,
+  .fab {
+    padding: 0.75rem 1.15rem;
+    font-size: 0.88rem;
+  }
+}
 
 /* --- Tarjetas --- */
 .card {
