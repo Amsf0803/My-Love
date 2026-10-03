@@ -54,7 +54,19 @@
       </div>
     `;
 
+    // Bloquear scroll de la página de fondo en móviles mientras el overlay esté activo
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
     document.body.appendChild(overlay);
+
+    function limpiarOverlay() {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+      if (overlay && overlay.parentNode) {
+        overlay.remove();
+      }
+    }
 
     // 5. Mostrar durante 4.5 segundos antes de iniciar el desvanecimiento
     const TIEMPO_VISIBLE_MS = 4500;
@@ -63,20 +75,10 @@
       overlay.classList.add("fade-out");
 
       // Remover del DOM una vez concluida la transición suave de CSS
-      overlay.addEventListener(
-        "transitionend",
-        () => {
-          overlay.remove();
-        },
-        { once: true }
-      );
+      overlay.addEventListener("transitionend", limpiarOverlay, { once: true });
 
-      // Respaldo de seguridad en caso de que la pestaña esté en segundo plano
-      setTimeout(() => {
-        if (overlay && overlay.parentNode) {
-          overlay.remove();
-        }
-      }, 1600);
+      // Respaldo de seguridad en caso de que la pestaña esté en segundo plano en móviles
+      setTimeout(limpiarOverlay, 1600);
     }, TIEMPO_VISIBLE_MS);
   }
 
