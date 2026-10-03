@@ -1121,3 +1121,89 @@ main {
   border-radius: 999px;
   border: 1px solid var(--border);
 }
+
+/* =========================================================================
+   PANTALLA INMERSIVA DE ANIVERSARIO (Día 3 de cada mes)
+   ========================================================================= */
+
+.anniversary-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 99999;
+  background: radial-gradient(circle at center, rgba(28, 30, 61, 0.96) 0%, rgba(11, 12, 31, 0.98) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 1.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.anniversary-card {
+  max-width: 620px;
+  width: 100%;
+  text-align: center;
+  color: var(--text, #f4f2ee);
+  animation: anniversaryEntrance 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.anniversary-icon {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.35rem;
+  filter: drop-shadow(0 0 16px rgba(234, 182, 84, 0.45));
+}
+
+.anniversary-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-display, "Fraunces", Georgia, serif);
+  font-size: clamp(2rem, 5.2vw, 3.2rem);
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--text, #f4f2ee);
+  text-shadow: 0 0 35px rgba(234, 182, 84, 0.35);
+}
+
+.anniversary-message {
+  margin: 0;
+  font-family: var(--font-body, "Sora", sans-serif);
+  font-size: clamp(1.1rem, 2.8vw, 1.45rem);
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--pink, #ef9bb3);
+  text-shadow: 0 0 24px rgba(239, 155, 179, 0.3);
+}
+
+.anniversary-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@keyframes anniversaryEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anniversary-card {
+    animation: none;
+  }
+  .anniversary-overlay {
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+}
