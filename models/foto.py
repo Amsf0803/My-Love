@@ -5,7 +5,7 @@ from extensions import db
 
 class Foto(db.Model):
     """
-    Representa una foto subida por el usuario, asociada a una fecha
+    Representa una foto (o video) subida por el usuario, asociada a una fecha
     específica del calendario (normalmente un día 3 de algún mes).
     """
 
@@ -22,6 +22,9 @@ class Foto(db.Model):
 
     fecha_subida = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
+    # Tipo de media: 'image' o 'video'
+    tipo_media = db.Column(db.String(20), nullable=False, default="image")
+
     def to_dict(self):
         """Serializa el modelo a un diccionario, útil para respuestas JSON
         (por ejemplo, al cargar fotos dinámicamente vía Fetch API o al
@@ -31,7 +34,8 @@ class Foto(db.Model):
             "ruta_archivo": self.ruta_archivo,
             "fecha_asociada": self.fecha_asociada.isoformat(),
             "fecha_subida": self.fecha_subida.isoformat(),
+            "tipo_media": self.tipo_media,
         }
 
     def __repr__(self):
-        return f"<Foto id={self.id} fecha={self.fecha_asociada}>"
+        return f"<Foto id={self.id} fecha={self.fecha_asociada} tipo={self.tipo_media}>"

@@ -34,9 +34,11 @@
   }
 </script>
 <script>
-  // Rutas de las fotos subidas, generadas por Flask a partir de la BD.
-  // Three.js las usará como texturas en el espiral de planos.
-  window.RUTAS_FOTOS = {{ rutas_fotos | tojson }};
+  // Elementos multimedia (fotos y videos) subidos, generados por Flask a
+  // partir de la BD. Three.js las usará como texturas en el espiral de
+  // planos. Cada item trae { id, ruta_archivo, fecha_asociada,
+  // fecha_subida, tipo_media }.
+  window.MEDIA_ITEMS = {{ media_items | tojson }};
 </script>
 <script type="module" src="{{ url_for('static', filename='js/universo3d.js') }}"></script>
 {% endblock %}

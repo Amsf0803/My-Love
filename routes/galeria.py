@@ -159,17 +159,27 @@ def subir_foto():
             nombre_seguro = secure_filename(archivo.filename)
             extension = nombre_seguro.rsplit(".", 1)[1].lower()
             nombre_final = f"{uuid.uuid4().hex}.{extension}"
-            
+
             ruta_absoluta = os.path.join(carpeta_destino, nombre_final)
             archivo.save(ruta_absoluta)
 
             # Ruta relativa para BD
             ruta_relativa = f"uploads/fotos/{nombre_final}"
 
-            # Añadimos a la sesión
-            nueva_foto = Foto(ruta_archivo=ruta_relativa, fecha_asociada=fecha_asociada)
+            # 1. Detectamos si la extensión es de un video
+            if extension in {'mp4', 'webm', 'mov'}:
+                tipo_archivo = 'video'
+            else:
+                tipo_archivo = 'image'
+
+            # 2. Le mandamos a la base de datos el "tipo_media"
+            nueva_foto = Foto(
+                ruta_archivo=ruta_relativa,
+                fecha_asociada=fecha_asociada,
+                tipo_media=tipo_archivo
+            )
             db.session.add(nueva_foto)
-            
+
             fotos_subidas += 1
 
     # 3. Hacemos el commit una sola vez al final, guardando todas las fotos válidas

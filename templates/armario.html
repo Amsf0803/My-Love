@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Armario Virtual | Mi Universo{% endblock %}
+
+{% block head_extra %}
+<style>
+    .armario-container {
+        display: flex;
+        gap: 20px;
+        min-height: calc(100vh - 150px);
+        align-items: flex-start;
+    }
+    
+    .sidebar {
+        width: 320px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
+    }
+    
+    .categoria-section {
+        margin-bottom: 10px;
+    }
+    
+    .categoria-section h3 {
+        color: var(--pink);
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 5px;
+    }
+    
+    .catalogo {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .prenda-item {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: contain;
+        cursor: grab;
+        border: 1px solid var(--border-strong);
+        background-color: var(--bg-elevated-2);
+        border-radius: var(--radius-sm);
+        user-select: none;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    
+    .prenda-item:hover {
+        border-color: var(--gold);
+        transform: scale(1.05);
+    }
+    
+    .prenda-item:active {
+        cursor: grabbing;
+    }
+    
+    .main-workspace {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .toolbar {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar-group {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+    
+    .lienzo-wrapper {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        overflow: hidden;
+    }
+    
+    #lienzo-outfit {
+        width: 100%;
+        max-width: 450px;
+        aspect-ratio: 3/4;
+        background-color: #ffffff; /* lienzo blanco para contrastar la ropa */
+        position: relative;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-elevated);
+    }
+    
+    #lienzo-outfit .prenda-en-lienzo {
+        position: absolute;
+        cursor: grab;
+        user-select: none;
+        width: 120px; 
+        height: auto;
+        filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3));
+    }
+    
+    #lienzo-outfit .prenda-en-lienzo:active {
+        cursor: grabbing;
+    }
+
+    .armario-nav {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container container--wide">
+    <div class="calendar-header" style="justify-content: center; margin-bottom: 1rem;">
+        <h1 style="text-align: center;">Tu Armario Virtual</h1>
+    </div>
+    
+    <div class="armario-nav">
+        <div class="tabs">
+            <a href="{{ url_for('armario.index') }}" class="tab-btn" style="border-bottom-color: var(--gold); color: var(--text);">Armar Outfit</a>
+            <a href="{{ url_for('armario.calendario') }}" class="tab-btn">Calendario de Ropa</a>
+        </div>
+    </div>
+
+    <div class="armario-container">
+        <!-- Sidebar Catalogo -->
+        <div class="sidebar card">
+            <h2>Catálogo</h2>
+            
+            <div class="categoria-section">
+                <h3>Top</h3>
+                <div class="catalogo" id="cat-Top"></div>
+            </div>
+            <div class="categoria-section">
+                <h3>Bottom</h3>
+                <div class="catalogo" id="cat-Bottom"></div>
+            </div>
+            <div class="categoria-section">
+                <h3>Calzado</h3>
+                <div class="catalogo" id="cat-Calzado"></div>
+            </div>
+            <div class="categoria-section">
+                <h3>Accesorio</h3>
+                <div class="catalogo" id="cat-Accesorio"></div>
+            </div>
+        </div>
+
+        <!-- Espacio de trabajo -->
+        <div class="main-workspace">
+            <div class="card">
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <div class="field" style="margin-bottom: 0;">
+                            <label>Nombre del Outfit</label>
+                            <input type="text" id="outfit-nombre" placeholder="Ej. Cita de viernes" style="width: 200px;">
+                        </div>
+                        <button class="btn btn-primary" id="btn-guardar">Guardar Outfit</button>
+                    </div>
+                    
+                    <div class="orbit-divider" style="width:1px; height:40px; margin: 0 10px; background:var(--border);"></div>
+                    
+                    <div class="toolbar-group">
+                        <div class="field" style="margin-bottom: 0;">
+                            <label>Subir Prenda</label>
+                            <input type="file" id="upload-file" accept="image/*" style="width: 180px;">
+                        </div>
+                        <div class="field" style="margin-bottom: 0;">
+                            <label>Categoría</label>
+                            <select id="upload-cat" style="background:var(--bg); border:1px solid var(--border-strong); padding:0.6rem; border-radius:var(--radius-sm); color:var(--text);">
+                                <option value="Top">Top</option>
+                                <option value="Bottom">Bottom</option>
+                                <option value="Calzado">Calzado</option>
+                                <option value="Accesorio">Accesorio</option>
+                            </select>
+                        </div>
+                        <button class="btn" id="btn-subir">Subir</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lienzo-wrapper">
+                <div id="lienzo-outfit">
+                    <!-- Ropa arrastrada aparecerá aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/armario.js') }}"></script>
+{% endblock %}

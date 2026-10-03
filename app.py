@@ -24,7 +24,12 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config_by_name[config_name])
 
-    # --- Inicializar extensiones ---
+    # --- FORZAR SQLITE EN PYTHONANYWHERE ---
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'mi_universo.db')
+    # --------------------------------------
+
     db.init_app(app)
 
     # --- Registrar Blueprints ---
@@ -33,12 +38,16 @@ def create_app(config_name=None):
     from routes.galeria import galeria_bp
     from routes.cartas import cartas_bp
     from routes.universo import universo_bp
+    from routes.armario import armario_bp
+    from routes.jardin import jardin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(galeria_bp)
     app.register_blueprint(cartas_bp)
     app.register_blueprint(universo_bp)
+    app.register_blueprint(armario_bp)
+    app.register_blueprint(jardin_bp)
 
     # --- Crear tablas y carpetas de uploads si no existen ---
     with app.app_context():

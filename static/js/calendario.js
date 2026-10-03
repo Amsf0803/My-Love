@@ -49,15 +49,29 @@
 
         contenedorFotos.hidden = false;
         for (const foto of fotos) {
-          const img = document.createElement("img");
-          img.src = `/static/${foto.ruta_archivo}`;
-          img.alt = `Foto del ${fechaISO}`;
-          img.loading = "lazy";
-          contenedorFotos.appendChild(img);
+          const ruta = foto.ruta_archivo || foto.ruta;
+          // Validación estricta por extensión de archivo
+          const esVideo = typeof ruta === 'string' && ruta.match(/\.(mp4|webm|mov|mkv)$/i);
+
+          let elemento;
+          if (esVideo) {
+            elemento = document.createElement("video");
+            elemento.src = `/static/${ruta}`;
+            elemento.controls = true;
+            elemento.loop = true;
+            elemento.preload = "metadata";
+            elemento.style.maxWidth = "100%"; // Evita que el video se desborde del modal
+          } else {
+            elemento = document.createElement("img");
+            elemento.src = `/static/${ruta}`;
+            elemento.alt = `Recuerdo del ${fechaISO}`;
+            elemento.loading = "lazy";
+          }
+          contenedorFotos.appendChild(elemento);
         }
       })
       .catch(() => {
-        loading.textContent = "No se pudieron cargar las fotos.";
+        loading.textContent = "No se pudieron cargar los archivos.";
       });
   }
 

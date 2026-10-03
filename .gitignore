@@ -1,7 +1,9 @@
-.venv
+.venv/
 .env
-
-
 __pycache__/
-
+instance/
 fotitos/
+static/uploads/fotos/*
+!static/uploads/fotos/.gitkeep
+static/uploads/cartas/*
+!static/uploads/cartas/.gitkeep
