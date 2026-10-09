@@ -19,7 +19,8 @@
   const inputFecha = document.getElementById("modal-dia-fecha-input");
   const botonCerrar = document.getElementById("modal-dia-cerrar");
 
-  // Controles de Portada Principal del Calendario
+  // Controles de Portada del Calendario (Mensual)
+  const calendarCoverCard = document.getElementById("calendarCoverCard");
   const inputCambiarPortada = document.getElementById("inputCambiarPortada");
   const calendarCoverMedia = document.getElementById("calendarCoverMedia");
   const labelPortadaTexto = document.getElementById("labelPortadaTexto");
@@ -387,7 +388,7 @@
   });
 
   // =========================================================================
-  // Cambio de Portada Principal del Calendario (Anti-Caché)
+  // Cambio de Portada Mensual del Calendario (Anti-Caché)
   // =========================================================================
   if (inputCambiarPortada) {
     inputCambiarPortada.addEventListener("change", () => {
@@ -399,6 +400,16 @@
 
       const formData = new FormData();
       formData.append("portada", archivo);
+
+      // Enviamos el año y mes activo para asociar la portada a ese mes específico
+      if (calendarCoverCard) {
+        if (calendarCoverCard.dataset.anio) {
+          formData.append("anio", calendarCoverCard.dataset.anio);
+        }
+        if (calendarCoverCard.dataset.mes) {
+          formData.append("mes", calendarCoverCard.dataset.mes);
+        }
+      }
 
       fetch("/set-calendar-cover", {
         method: "POST",
@@ -415,7 +426,7 @@
 
             let img = document.getElementById("calendarCoverImg");
             if (!img) {
-              calendarCoverMedia.innerHTML = `<img id="calendarCoverImg" alt="Portada de Nuestro Calendario">`;
+              calendarCoverMedia.innerHTML = `<img id="calendarCoverImg" alt="Portada del Mes">`;
               img = document.getElementById("calendarCoverImg");
             }
             img.src = cacheBusterUrl;

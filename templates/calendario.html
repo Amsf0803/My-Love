@@ -5,22 +5,22 @@
 
 {% block content %}
 <div class="container">
-  <!-- Banner de Portada Principal del Calendario -->
-  <div class="calendar-cover" id="calendarCoverCard">
+  <!-- Banner de Portada Mensual del Calendario -->
+  <div class="calendar-cover" id="calendarCoverCard" data-anio="{{ anio }}" data-mes="{{ mes }}">
     <div class="calendar-cover__media" id="calendarCoverMedia">
       {% if portada_calendario %}
-        <img id="calendarCoverImg" src="{{ url_for('static', filename=portada_calendario) }}" alt="Portada de Nuestro Calendario">
+        <img id="calendarCoverImg" src="{{ url_for('static', filename=portada_calendario) }}" alt="Portada de {{ nombre_mes }} {{ anio }}">
       {% else %}
         <div class="calendar-cover__placeholder" id="calendarCoverPlaceholder">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-          <span>Nuestra Historia de Amor</span>
+          <span>Portada de {{ nombre_mes }} {{ anio }}</span>
         </div>
       {% endif %}
     </div>
     <div class="calendar-cover__actions">
-      <label for="inputCambiarPortada" class="btn-change-cover" id="btnCambiarPortadaLabel" title="Cambiar foto de portada principal">
+      <label for="inputCambiarPortada" class="btn-change-cover" id="btnCambiarPortadaLabel" title="Cambiar foto de portada de {{ nombre_mes }} {{ anio }}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        <span id="labelPortadaTexto">Cambiar Portada</span>
+        <span id="labelPortadaTexto">Portada de {{ nombre_mes }}</span>
       </label>
       <input type="file" id="inputCambiarPortada" accept="image/*" style="display: none;">
     </div>

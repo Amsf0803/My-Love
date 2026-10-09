@@ -108,8 +108,11 @@ def calendario():
         mes -= 12
         anio += 1
 
-    # Obtenemos la portada principal del calendario si existe
-    ajuste_portada = AjusteGlobal.query.filter_by(clave="portada_calendario").first()
+    # Obtenemos la portada específica del mes si existe (o fallback a portada general)
+    clave_mensual = f"portada_calendario_{anio}_{mes:02d}"
+    ajuste_portada = AjusteGlobal.query.filter_by(clave=clave_mensual).first()
+    if not ajuste_portada:
+        ajuste_portada = AjusteGlobal.query.filter_by(clave="portada_calendario").first()
     portada_calendario = ajuste_portada.valor if ajuste_portada else None
 
     # Trae las fotos del mes ordenadas por is_preview DESC (para que la primera sea la portada)
@@ -345,9 +348,9 @@ def set_preview():
 @login_required
 def set_calendar_cover():
     """
-    Cambio de Portada Principal:
-    Actualiza la imagen de portada de todo el calendario.
-    Aplica timestamp UNIX anti-caché y borra la portada anterior del servidor.
+    Cambio de Portada Mensual del Calendario:
+    Actualiza la imagen de portada para el mes y año seleccionados.
+    Aplica timestamp UNIX anti-caché y borra la portada anterior de ese mes.
     """
     archivo = request.files.get("archivo") or request.files.get("portada")
 
@@ -358,33 +361,41 @@ def set_calendar_cover():
     if not _extension_permitida(archivo.filename, extensiones_permitidas):
         return jsonify({"success": False, "error": "Formato de imagen no permitido."}), 400
 
+    # Mes y año a los que corresponde la portada
+    hoy = date.today()
+    anio = request.form.get("anio", default=hoy.year, type=int)
+    mes = request.form.get("mes", default=hoy.month, type=int)
+    clave_mensual = f"portada_calendario_{anio}_{mes:02d}"
+
     carpeta_destino = current_app.config["UPLOAD_FOLDER_FOTOS"]
     os.makedirs(carpeta_destino, exist_ok=True)
 
     # Renombrado anti-caché con timestamp UNIX
-    nombre_final = _generar_nombre_cache_busting(archivo.filename, prefijo="portada_calendario")
+    nombre_final = _generar_nombre_cache_busting(archivo.filename, prefijo=f"portada_{anio}_{mes:02d}")
     ruta_absoluta = os.path.join(carpeta_destino, nombre_final)
     archivo.save(ruta_absoluta)
 
     nueva_ruta_relativa = f"uploads/fotos/{nombre_final}"
 
-    # Recuperar o crear registro en AjusteGlobal
-    ajuste = AjusteGlobal.query.filter_by(clave="portada_calendario").first()
+    # Recuperar o crear registro en AjusteGlobal para el mes específico
+    ajuste = AjusteGlobal.query.filter_by(clave=clave_mensual).first()
     if ajuste:
-        # Eliminamos físicamente la portada previa para no desperdiciar espacio
+        # Eliminamos físicamente la portada previa de este mes para no acumular archivos
         if ajuste.valor and ajuste.valor != nueva_ruta_relativa:
             _eliminar_archivo_fisico(ajuste.valor)
         ajuste.valor = nueva_ruta_relativa
     else:
-        ajuste = AjusteGlobal(clave="portada_calendario", valor=nueva_ruta_relativa)
+        ajuste = AjusteGlobal(clave=clave_mensual, valor=nueva_ruta_relativa)
         db.session.add(ajuste)
 
     db.session.commit()
 
     return jsonify({
         "success": True,
-        "message": "Portada principal actualizada exitosamente.",
+        "message": f"Portada de {MESES_ES[mes]} {anio} actualizada exitosamente.",
         "ruta_portada": nueva_ruta_relativa,
+        "anio": anio,
+        "mes": mes,
         "timestamp": int(time.time())
     })
 
