@@ -929,6 +929,252 @@ main {
   border-radius: var(--radius-sm);
 }
 
+/* --- Portada Principal del Calendario --- */
+.calendar-cover {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.5);
+}
+
+.calendar-cover__media {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.calendar-cover__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.calendar-cover__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--pink);
+  background: radial-gradient(circle at center, rgba(239, 155, 179, 0.18) 0%, transparent 70%);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.calendar-cover__actions {
+  position: absolute;
+  bottom: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+}
+
+.btn-change-cover {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(11, 12, 31, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  padding: 0.45rem 0.95rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-change-cover:hover {
+  background: var(--pink-soft);
+  border-color: var(--pink);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* --- Modal Editable del Día --- */
+.modal--editable {
+  max-width: 560px;
+}
+
+.modal__media-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.media-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem;
+  transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.25s ease;
+  position: relative;
+}
+
+.media-item.is-cover-media {
+  border-color: var(--pink);
+  box-shadow: 0 0 16px -4px rgba(239, 155, 179, 0.35);
+  background: linear-gradient(135deg, rgba(239, 155, 179, 0.08), var(--bg-elevated-2));
+}
+
+.media-item__preview {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--border);
+}
+
+.media-item__preview img,
+.media-item__preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.media-item__badge {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  background: var(--pink);
+  color: #0b0c1f;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.media-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.media-item__type {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.media-item__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-media-action {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 0.32rem 0.6rem;
+  font-size: 0.73rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.15s ease;
+}
+
+.btn-media-action:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn-media-action--preview {
+  color: var(--gold);
+}
+
+.btn-media-action--preview.is-active {
+  background: var(--pink-soft);
+  border-color: var(--pink);
+  color: var(--pink);
+  font-weight: 600;
+  cursor: default;
+}
+
+.btn-media-action--preview:not(.is-active):hover {
+  background: var(--gold-soft);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.btn-media-action--delete {
+  color: var(--danger);
+  margin-left: auto;
+}
+
+.btn-media-action--delete:hover {
+  background: rgba(229, 138, 138, 0.2);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.media-item__order-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-self: center;
+}
+
+.btn-order-arrow {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-order-arrow:hover:not(:disabled) {
+  background: var(--pink-soft);
+  color: var(--pink);
+  border-color: var(--pink);
+}
+
+.btn-order-arrow:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
 .modal__empty {
   font-size: 0.88rem;
   color: var(--text-faint);
