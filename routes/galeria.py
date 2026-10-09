@@ -357,9 +357,12 @@ def set_calendar_cover():
     if not archivo or archivo.filename == "":
         return jsonify({"success": False, "error": "No se envió ningún archivo de imagen."}), 400
 
-    extensiones_permitidas = current_app.config.get("ALLOWED_EXTENSIONS_FOTOS", {"png", "jpg", "jpeg", "webp", "gif"})
+    extensiones_permitidas = current_app.config.get(
+        "ALLOWED_EXTENSIONS_FOTOS",
+        {"png", "jpg", "jpeg", "webp", "gif", "avif", "mp4", "webm", "mov", "mkv", "3gp"}
+    )
     if not _extension_permitida(archivo.filename, extensiones_permitidas):
-        return jsonify({"success": False, "error": "Formato de imagen no permitido."}), 400
+        return jsonify({"success": False, "error": "Formato de archivo (foto o video) no permitido."}), 400
 
     # Mes y año a los que corresponde la portada
     hoy = date.today()
@@ -376,6 +379,9 @@ def set_calendar_cover():
     archivo.save(ruta_absoluta)
 
     nueva_ruta_relativa = f"uploads/fotos/{nombre_final}"
+    extension = nombre_final.rsplit(".", 1)[-1].lower()
+    video_exts = current_app.config.get("VIDEO_EXTENSIONS", {"mp4", "webm", "mov", "mkv", "3gp"})
+    tipo_media = "video" if extension in video_exts else "image"
 
     # Recuperar o crear registro en AjusteGlobal para el mes específico
     ajuste = AjusteGlobal.query.filter_by(clave=clave_mensual).first()
@@ -394,6 +400,7 @@ def set_calendar_cover():
         "success": True,
         "message": f"Portada de {MESES_ES[mes]} {anio} actualizada exitosamente.",
         "ruta_portada": nueva_ruta_relativa,
+        "tipo_media": tipo_media,
         "anio": anio,
         "mes": mes,
         "timestamp": int(time.time())

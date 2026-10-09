@@ -423,13 +423,21 @@
           if (data.success) {
             // Anti-caché forzando query param con timestamp
             const cacheBusterUrl = `/static/${data.ruta_portada}?t=${data.timestamp || Date.now()}`;
+            const esVideo = data.tipo_media === "video" || esVideoUrl(data.ruta_portada);
 
-            let img = document.getElementById("calendarCoverImg");
-            if (!img) {
-              calendarCoverMedia.innerHTML = `<img id="calendarCoverImg" alt="Portada del Mes">`;
-              img = document.getElementById("calendarCoverImg");
+            if (esVideo) {
+              calendarCoverMedia.innerHTML = `
+                <video id="calendarCoverVideo" src="${cacheBusterUrl}"
+                       autoplay muted loop playsinline disablePictureInPicture
+                       style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
+                </video>
+              `;
+            } else {
+              calendarCoverMedia.innerHTML = `
+                <img id="calendarCoverImg" src="${cacheBusterUrl}" alt="Portada del Mes"
+                     style="width: 100%; height: 100%; object-fit: cover; display: block;">
+              `;
             }
-            img.src = cacheBusterUrl;
           } else {
             alert(data.error || "No se pudo cambiar la portada del calendario.");
           }

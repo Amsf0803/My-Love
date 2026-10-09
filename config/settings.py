@@ -63,13 +63,13 @@ class Config:
 
     # Extensiones permitidas: imágenes + videos
     ALLOWED_EXTENSIONS_FOTOS = {
-        "png", "jpg", "jpeg", "gif", "webp","avif",  # imágenes
-        "mp4", "webm", "mov",                  # videos
+        "png", "jpg", "jpeg", "gif", "webp", "avif",  # imágenes
+        "mp4", "webm", "mov", "mkv", "3gp",           # videos
     }
     ALLOWED_EXTENSIONS_CARTAS = {"png", "jpg", "jpeg", "gif", "webp", "pdf"}
 
     # Extensiones que se consideran video (para clasificar tipo_media)
-    VIDEO_EXTENSIONS = {"mp4", "webm", "mov"}
+    VIDEO_EXTENSIONS = {"mp4", "webm", "mov", "mkv", "3gp"}
 
 
 class DevelopmentConfig(Config):
