@@ -171,16 +171,10 @@
       <video id="lightbox-video" controls playsinline preload="auto" style="display: none;"></video>
       <img id="lightbox-img" src="" alt="Recuerdo ampliado" style="display: none;">
     </div>
-    <div class="lightbox-caption">
-      <span class="lightbox-caption__badge">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Reproduciendo con Audio
-      </span>
-    </div>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/calendario.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calendario.js') }}?v={{ range(100000, 999999) | random }}"></script>
 {% endblock %}

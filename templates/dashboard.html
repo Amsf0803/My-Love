@@ -98,6 +98,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/contador.js') }}"></script>
-<script src="{{ url_for('static', filename='js/aniversario.js') }}"></script>
+<script src="{{ url_for('static', filename='js/contador.js') }}?v={{ range(100000, 999999) | random }}"></script>
+<script src="{{ url_for('static', filename='js/aniversario.js') }}?v={{ range(100000, 999999) | random }}"></script>
 {% endblock %}

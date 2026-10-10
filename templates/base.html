@@ -4,10 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}Mi Universo{% endblock %}</title>
+  <!-- Etiquetas HTTP-EQUIV para forzar no-cache y no-store en navegadores móviles -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/Iset/icon.png') }}">
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='img/Iset/icon.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/Iset/icon.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.1">
+  <!-- Cache Busting Dinámico para CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ range(100000, 999999) | random }}">
   {% block head_extra %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -65,8 +71,8 @@
     </main>
   </div>
 
-  <script src="{{ url_for('static', filename='js/starfield.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/starfield.js') }}?v={{ range(100000, 999999) | random }}"></script>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}?v={{ range(100000, 999999) | random }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

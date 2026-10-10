@@ -213,5 +213,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/jardin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jardin.js') }}?v={{ range(100000, 999999) | random }}"></script>
 {% endblock %}
