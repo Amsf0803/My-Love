@@ -93,34 +93,90 @@
   </div>
 </div>
 
-<!-- Modal: ver / editar / subir fotos de un día -->
+<!-- Modal: recuerdos de un día (Sistema de Doble Estado: Visualización / Edición) -->
 <div class="modal-overlay" id="modal-dia">
-  <div class="modal modal--editable">
+  <div class="modal modal--recuerdos" id="modal-recuerdos-container">
     <div class="modal__header">
-      <h2 id="modal-dia-titulo">Ese día</h2>
+      <div class="modal__title-wrap">
+        <span class="modal__badge-date" id="modal-dia-badge">Nuestros Recuerdos</span>
+        <h2 id="modal-dia-titulo">Ese día</h2>
+      </div>
       <button type="button" class="modal__close" id="modal-dia-cerrar" aria-label="Cerrar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
 
-    <div id="modal-dia-loading" class="modal__loading">Buscando recuerdos…</div>
-    <div id="modal-dia-fotos" class="modal__media-list" hidden></div>
-    <p id="modal-dia-vacio" class="modal__empty" hidden>Todavía no hay fotos ni videos de este día.</p>
-
-    <form
-      id="form-subir-foto"
-      method="POST"
-      action="{{ url_for('galeria.subir_foto') }}"
-      enctype="multipart/form-data"
-    >
-      <input type="hidden" name="fecha_asociada" id="modal-dia-fecha-input" value="">
-      <div class="field">
-        <label for="archivos-fotos">Agregar foto(s) o video(s) a este día</label>
-        <input type="file" id="archivos-fotos" name="archivos" accept="image/*,video/*" multiple required>
+    <div class="modal__body" id="modal-dia-body">
+      <div id="modal-dia-loading" class="modal__loading">
+        <div class="loading-spinner"></div>
+        <span>Buscando recuerdos…</span>
       </div>
-      <button type="submit" class="btn btn-primary btn-block btn-sm">Subir recuerdos</button>
-    </form>
 
+      <!-- Galería en cuadrícula responsiva (Modo Visualización por defecto) -->
+      <div id="modal-dia-fotos" class="media-gallery" hidden></div>
+
+      <div id="modal-dia-vacio" class="modal__empty" hidden>
+        <div class="modal__empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+        <p class="modal__empty-text">Aún no hay fotos ni videos guardados en este día.</p>
+        <span class="modal__empty-sub">¡Puedes agregar los primeros momentos a continuación!</span>
+      </div>
+
+      <!-- Sección de Subida de Fotos / Videos -->
+      <div class="modal__upload-section" id="modal-dia-upload-section">
+        <form
+          id="form-subir-foto"
+          method="POST"
+          action="{{ url_for('galeria.subir_foto') }}"
+          enctype="multipart/form-data"
+        >
+          <input type="hidden" name="fecha_asociada" id="modal-dia-fecha-input" value="">
+          <div class="upload-dropzone">
+            <label for="archivos-fotos" class="upload-dropzone__label">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span class="upload-dropzone__title">Agregar más recuerdos</span>
+              <span class="upload-dropzone__hint">Fotos o videos (JPG, PNG, MP4, MOV)</span>
+            </label>
+            <input type="file" id="archivos-fotos" name="archivos" accept="image/*,video/*" multiple required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-sm btn-subir-media">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Subir a este día
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Pie del Modal: Botón de Alternancia de Estado -->
+    <div class="modal__footer" id="modal-dia-footer">
+      <button type="button" class="btn-toggle-modo" id="btn-toggle-modo-edicion">
+        <span class="btn-toggle-modo__icon">
+          <svg class="icon-edit-mode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <svg class="icon-done-mode" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <span id="btn-toggle-modo-texto">Editar Recuerdos</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox / Reproductor de Video y Fotos en Grande -->
+<div class="lightbox-overlay" id="lightbox-media" aria-hidden="true">
+  <div class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Reproductor de recuerdo">
+    <button type="button" class="lightbox-close" id="lightbox-cerrar" aria-label="Cerrar reproductor">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="lightbox-content" id="lightbox-container">
+      <video id="lightbox-video" controls playsinline preload="auto" style="display: none;"></video>
+      <img id="lightbox-img" src="" alt="Recuerdo ampliado" style="display: none;">
+    </div>
+    <div class="lightbox-caption">
+      <span class="lightbox-caption__badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Reproduciendo con Audio
+      </span>
+    </div>
   </div>
 </div>
 {% endblock %}

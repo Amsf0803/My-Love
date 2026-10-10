@@ -20,17 +20,43 @@ const rutasFotos = window.MEDIA_ITEMS || window.RUTAS_FOTOS || [];
 const canvas = document.getElementById("universo-canvas");
 const loadingOverlay = document.getElementById("universo-loading");
 
+// --- Parámetros de la galaxia en espiral áurea ----------------------------
+const ANGULO_DORADO = Math.PI * (3 - Math.sqrt(5));
+const RADIO_BASE = 3.5;
+const ESPACIADO = 1.3;
+
+// Radio de la última foto (la más exterior)
+const totalFotos = rutasFotos.length;
+const radioUltimaFoto = totalFotos > 0
+  ? RADIO_BASE + Math.sqrt(Math.max(0, totalFotos - 1)) * ESPACIADO
+  : RADIO_BASE;
+
+// Distancia máxima de zoom (OrbitControls) calculada en base a la última foto
+// para dejar un margen visual holgado y evitar que la cámara quede pegada a las últimas fotos
+const maxZoomDistance = Math.max(28, Math.round(radioUltimaFoto * 2.1 + 8));
+const minZoomDistance = 2.5;
+
+// Encuadre inicial armónico que abarca la galaxia desde el primer momento
+const distanciaInicial = Math.min(
+  Math.max(14, radioUltimaFoto * 1.3 + 6),
+  maxZoomDistance * 0.75
+);
+const alturaInicial = Math.max(6, distanciaInicial * 0.4);
+
 // --- Escena, cámara y renderer -------------------------------------------
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x05060f, 0.028);
+
+// Niebla cósmica suave adaptada a la escala de la galaxia
+const densidadNiebla = Math.min(0.025, 0.55 / maxZoomDistance);
+scene.fog = new THREE.FogExp2(0x05060f, densidadNiebla);
 
 const camera = new THREE.PerspectiveCamera(
   55,
   window.innerWidth / window.innerHeight,
   0.1,
-  200
+  Math.max(300, maxZoomDistance * 4)
 );
-camera.position.set(0, 6, 12);
+camera.position.set(0, alturaInicial, distanciaInicial);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -39,8 +65,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.06;
-controls.minDistance = 3;
-controls.maxDistance = 22;
+controls.minDistance = minZoomDistance;
+controls.maxDistance = maxZoomDistance;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0.5;
 controls.target.set(0, 0.6, 0);
@@ -98,10 +124,11 @@ function crearCampoDeEstrellas(cantidad, radio, colorHex, tamaño) {
   return new THREE.Points(geometria, material);
 }
 
+const radioEstrellas = Math.max(120, maxZoomDistance * 2.6);
 const fondoEstrellas = new THREE.Group();
-fondoEstrellas.add(crearCampoDeEstrellas(2500, 90, 0xffffff, 0.3));
-fondoEstrellas.add(crearCampoDeEstrellas(1000, 70, 0x8ab4f8, 0.6));
-fondoEstrellas.add(crearCampoDeEstrellas(350, 50, 0xeab654, 1.2));
+fondoEstrellas.add(crearCampoDeEstrellas(2800, radioEstrellas, 0xffffff, 0.35));
+fondoEstrellas.add(crearCampoDeEstrellas(1200, radioEstrellas * 0.75, 0x8ab4f8, 0.65));
+fondoEstrellas.add(crearCampoDeEstrellas(450, radioEstrellas * 0.5, 0xeab654, 1.2));
 scene.add(fondoEstrellas);
 
 
@@ -184,10 +211,6 @@ scene.add(textoFlotante);
 // --- Fotos en espiral (Formación de Galaxia) ---------------------------------
 const grupoFotos = new THREE.Group();
 scene.add(grupoFotos);
-
-const ANGULO_DORADO = Math.PI * (3 - Math.sqrt(5));
-const RADIO_BASE = 3.5;
-const ESPACIADO = 1.3;
 
 function posicionarEnGalaxia(indice) {
   const angulo = indice * ANGULO_DORADO;

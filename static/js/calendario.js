@@ -12,12 +12,21 @@
   const overlay = document.getElementById("modal-dia");
   if (!overlay) return;
 
+  const modalContainer = document.getElementById("modal-recuerdos-container") || overlay.querySelector(".modal");
   const titulo = document.getElementById("modal-dia-titulo");
   const loading = document.getElementById("modal-dia-loading");
   const contenedorFotos = document.getElementById("modal-dia-fotos");
   const mensajeVacio = document.getElementById("modal-dia-vacio");
   const inputFecha = document.getElementById("modal-dia-fecha-input");
   const botonCerrar = document.getElementById("modal-dia-cerrar");
+  const btnToggleModo = document.getElementById("btn-toggle-modo-edicion");
+  const btnToggleTexto = document.getElementById("btn-toggle-modo-texto");
+
+  // Controles del Reproductor en Grande (Lightbox)
+  const lightboxOverlay = document.getElementById("lightbox-media");
+  const lightboxVideo = document.getElementById("lightbox-video");
+  const lightboxImg = document.getElementById("lightbox-img");
+  const lightboxCerrar = document.getElementById("lightbox-cerrar");
 
   // Controles de Portada del Calendario (Mensual)
   const calendarCoverCard = document.getElementById("calendarCoverCard");
@@ -26,6 +35,7 @@
   const labelPortadaTexto = document.getElementById("labelPortadaTexto");
 
   let fechaActualModal = null;
+  let modoEdicionActivo = false;
 
   const MESES_LARGO = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -39,6 +49,92 @@
 
   function esVideoUrl(url) {
     return typeof url === "string" && Boolean(url.match(/\.(mp4|webm|mov|mkv)$/i));
+  }
+
+  /**
+   * Abre el reproductor de video en grande y reproduce inmediatamente con AUDIO.
+   */
+  function abrirReproductorVideo(url) {
+    if (!lightboxOverlay || !lightboxVideo) return;
+
+    if (lightboxImg) {
+      lightboxImg.style.display = "none";
+      lightboxImg.src = "";
+    }
+
+    lightboxVideo.style.display = "block";
+    lightboxVideo.src = url;
+    lightboxVideo.muted = false; // Audio ACTIVADO al hacer grande
+    lightboxVideo.volume = 1;
+
+    lightboxOverlay.classList.add("is-open");
+    lightboxOverlay.setAttribute("aria-hidden", "false");
+
+    const playPromise = lightboxVideo.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn("Autoplay con audio requiere interacción:", err);
+      });
+    }
+  }
+
+  /**
+   * Abre la foto en grande dentro del lightbox.
+   */
+  function abrirVisorFoto(url) {
+    if (!lightboxOverlay || !lightboxImg) return;
+
+    if (lightboxVideo) {
+      lightboxVideo.pause();
+      lightboxVideo.removeAttribute("src");
+      lightboxVideo.load();
+      lightboxVideo.style.display = "none";
+    }
+
+    lightboxImg.src = url;
+    lightboxImg.style.display = "block";
+
+    lightboxOverlay.classList.add("is-open");
+    lightboxOverlay.setAttribute("aria-hidden", "false");
+  }
+
+  /**
+   * Cierra el reproductor en grande y detiene el audio/video por completo.
+   */
+  function cerrarReproductor() {
+    if (!lightboxOverlay) return;
+
+    if (lightboxVideo) {
+      lightboxVideo.pause();
+      lightboxVideo.removeAttribute("src");
+      lightboxVideo.load();
+      lightboxVideo.style.display = "none";
+    }
+
+    if (lightboxImg) {
+      lightboxImg.src = "";
+      lightboxImg.style.display = "none";
+    }
+
+    lightboxOverlay.classList.remove("is-open");
+    lightboxOverlay.setAttribute("aria-hidden", "true");
+  }
+
+  /**
+   * Control del Sistema de Doble Estado:
+   * false -> Modo Visualización (por defecto): CERO controles visibles.
+   * true  -> Modo Edición: Muestra controles sobre cada recuerdo y botón de subida.
+   */
+  function setModoEdicion(activar) {
+    modoEdicionActivo = Boolean(activar);
+
+    if (modalContainer) {
+      modalContainer.classList.toggle("modo-edicion", modoEdicionActivo);
+    }
+
+    if (btnToggleTexto) {
+      btnToggleTexto.textContent = modoEdicionActivo ? "Finalizar Edición" : "Editar Recuerdos";
+    }
   }
 
   /**
@@ -75,12 +171,12 @@
    * Actualiza los estados de los botones de flecha (primer y último elemento).
    */
   function refrescarEstadosFlechas() {
-    const items = contenedorFotos.querySelectorAll(".media-item");
+    const items = contenedorFotos.querySelectorAll(".media-card, .media-item");
     items.forEach((item, index) => {
-      const btnUp = item.querySelector(".btn-order-up");
-      const btnDown = item.querySelector(".btn-order-down");
-      if (btnUp) btnUp.disabled = (index === 0);
-      if (btnDown) btnDown.disabled = (index === items.length - 1);
+      const btnPrev = item.querySelector(".btn-order-prev, .btn-order-up");
+      const btnNext = item.querySelector(".btn-order-next, .btn-order-down");
+      if (btnPrev) btnPrev.disabled = (index === 0);
+      if (btnNext) btnNext.disabled = (index === items.length - 1);
     });
   }
 
@@ -88,7 +184,7 @@
    * Guarda el nuevo orden de los elementos en el backend.
    */
   function guardarNuevoOrden() {
-    const items = contenedorFotos.querySelectorAll(".media-item");
+    const items = contenedorFotos.querySelectorAll(".media-card, .media-item");
     const ordenIds = Array.from(items).map((item) => Number(item.dataset.id)).filter(Boolean);
 
     if (ordenIds.length <= 1) return;
@@ -108,64 +204,100 @@
   }
 
   /**
-   * Genera el DOM de un elemento multimedia con sus controles interactivos.
+   * Genera el DOM de un elemento multimedia con tarjeta visual y controles flotantes.
+   * Los controles están en el DOM pero ocultos por defecto con CSS hasta activar .modo-edicion.
    */
   function crearMediaCard(foto, fechaISO) {
     const card = document.createElement("div");
-    card.className = `media-item ${foto.is_preview ? "is-cover-media" : ""}`;
+    card.className = `media-card media-item ${foto.is_preview ? "is-cover-media" : ""}`;
     card.dataset.id = foto.id;
 
     const ruta = foto.ruta_archivo || foto.ruta;
     const esVideo = foto.tipo_media === "video" || esVideoUrl(ruta);
 
-    // Contenedor de preview
-    const previewDiv = document.createElement("div");
-    previewDiv.className = "media-item__preview";
+    // Contenedor visual del contenido (Foto o Video)
+    const mediaContent = document.createElement("div");
+    mediaContent.className = "media-card__content";
 
     if (esVideo) {
       const video = document.createElement("video");
       video.src = `/static/${ruta}`;
       video.muted = true;
       video.playsInline = true;
+      video.autoplay = true;
+      video.loop = true;
       video.preload = "metadata";
-      previewDiv.appendChild(video);
+      video.setAttribute("disablePictureInPicture", "");
+      mediaContent.appendChild(video);
+
+      const videoBadge = document.createElement("span");
+      videoBadge.className = "media-card__type-badge";
+      videoBadge.title = "Video";
+      videoBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+      mediaContent.appendChild(videoBadge);
+
+      const playPrompt = document.createElement("div");
+      playPrompt.className = "media-card__play-prompt";
+      playPrompt.innerHTML = `
+        <div class="media-card__play-prompt-icon" title="Reproducir video con audio">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+        </div>
+      `;
+      mediaContent.appendChild(playPrompt);
     } else {
       const img = document.createElement("img");
       img.src = `/static/${ruta}`;
       img.alt = "Recuerdo";
       img.loading = "lazy";
-      previewDiv.appendChild(img);
+      mediaContent.appendChild(img);
     }
 
+    // Clic sobre el recuerdo en Modo Visualización para hacerlo grande
+    mediaContent.addEventListener("click", () => {
+      // En modo edición no abrimos el reproductor para permitir editar libremente
+      if (modoEdicionActivo) return;
+
+      if (esVideo) {
+        abrirReproductorVideo(`/static/${ruta}`);
+      } else {
+        abrirVisorFoto(`/static/${ruta}`);
+      }
+    });
+
+    // Badge estático de Portada para Modo Visualización
     if (foto.is_preview) {
-      const badge = document.createElement("span");
-      badge.className = "media-item__badge";
-      badge.textContent = "Portada";
-      previewDiv.appendChild(badge);
+      const coverBadge = document.createElement("span");
+      coverBadge.className = "media-card__cover-badge";
+      coverBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Portada`;
+      mediaContent.appendChild(coverBadge);
     }
 
-    // Info y acciones
-    const infoDiv = document.createElement("div");
-    infoDiv.className = "media-item__info";
+    // Overlay translúcido de fondo para Modo Edición
+    const overlayDiv = document.createElement("div");
+    overlayDiv.className = "media-card__overlay";
+    mediaContent.appendChild(overlayDiv);
 
-    const typeDiv = document.createElement("div");
-    typeDiv.className = "media-item__type";
-    typeDiv.innerHTML = esVideo
-      ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Video`
-      : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Foto`;
+    // =======================================================================
+    // CONTROLES DE EDICIÓN (ocultos por defecto vía CSS)
+    // =======================================================================
+    const controlsDiv = document.createElement("div");
+    controlsDiv.className = "media-card__controls";
 
-    const actionsDiv = document.createElement("div");
-    actionsDiv.className = "media-item__actions";
+    // Fila Superior de Controles: Portada y Eliminar
+    const controlsTop = document.createElement("div");
+    controlsTop.className = "media-card__controls-top";
 
-    // Botón: Usar como portada
+    // Botón: Usar como Portada
     const btnPreview = document.createElement("button");
     btnPreview.type = "button";
-    btnPreview.className = `btn-media-action btn-media-action--preview ${foto.is_preview ? "is-active" : ""}`;
+    btnPreview.className = `btn-media-control btn-media-control--preview btn-media-action--preview ${foto.is_preview ? "is-active" : ""}`;
+    btnPreview.title = foto.is_preview ? "Portada del día" : "Usar como portada";
     btnPreview.innerHTML = foto.is_preview
-      ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Portada del día`
-      : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Usar de portada`;
+      ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Portada</span>`
+      : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Portada</span>`;
 
-    btnPreview.addEventListener("click", () => {
+    btnPreview.addEventListener("click", (e) => {
+      e.stopPropagation();
       if (card.classList.contains("is-cover-media")) return;
 
       btnPreview.disabled = true;
@@ -179,28 +311,30 @@
           btnPreview.disabled = false;
           if (data.success) {
             // Actualizar tarjetas en el modal
-            contenedorFotos.querySelectorAll(".media-item").forEach((it) => {
+            contenedorFotos.querySelectorAll(".media-card, .media-item").forEach((it) => {
               it.classList.remove("is-cover-media");
-              const prevBadge = it.querySelector(".media-item__badge");
+              const prevBadge = it.querySelector(".media-card__cover-badge");
               if (prevBadge) prevBadge.remove();
 
-              const prevBtn = it.querySelector(".btn-media-action--preview");
+              const prevBtn = it.querySelector(".btn-media-control--preview");
               if (prevBtn) {
                 prevBtn.classList.remove("is-active");
-                prevBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Usar de portada`;
+                prevBtn.title = "Usar como portada";
+                prevBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Portada</span>`;
               }
             });
 
             card.classList.add("is-cover-media");
             const newBadge = document.createElement("span");
-            newBadge.className = "media-item__badge";
-            newBadge.textContent = "Portada";
-            previewDiv.appendChild(newBadge);
+            newBadge.className = "media-card__cover-badge";
+            newBadge.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Portada`;
+            mediaContent.appendChild(newBadge);
 
             btnPreview.classList.add("is-active");
-            btnPreview.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Portada del día`;
+            btnPreview.title = "Portada del día";
+            btnPreview.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Portada</span>`;
 
-            // Actualizar la celda en la grilla del calendario
+            // Actualizar celda en la grilla del calendario
             actualizarMiniaturaCalendario(fechaISO, data.ruta_archivo, data.tipo_media);
           } else {
             alert(data.error || "No se pudo actualizar la portada.");
@@ -212,20 +346,21 @@
         });
     });
 
-    // Botón: Eliminar total
+    // Botón: Eliminar recuerdo (rojo con papelera)
     const btnDelete = document.createElement("button");
     btnDelete.type = "button";
-    btnDelete.className = "btn-media-action btn-media-action--delete";
-    btnDelete.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Eliminar`;
+    btnDelete.className = "btn-media-control btn-media-control--delete btn-media-action--delete";
+    btnDelete.title = "Eliminar recuerdo";
+    btnDelete.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
 
-    btnDelete.addEventListener("click", () => {
+    btnDelete.addEventListener("click", (e) => {
+      e.stopPropagation();
       const confirmacion = window.confirm(
         "¿Estás seguro de que deseas eliminar este recuerdo?\n\nEsta acción eliminará el archivo del servidor de forma permanente para liberar espacio y no se puede deshacer."
       );
       if (!confirmacion) return;
 
       btnDelete.disabled = true;
-      btnDelete.textContent = "Borrando…";
 
       fetch("/delete-media", {
         method: "POST",
@@ -237,30 +372,33 @@
           if (data.success) {
             // Animación suave de salida
             card.style.opacity = "0";
-            card.style.transform = "scale(0.95)";
+            card.style.transform = "scale(0.88)";
             setTimeout(() => {
               card.remove();
               refrescarEstadosFlechas();
 
               if (data.total_restantes === 0) {
                 mensajeVacio.hidden = false;
+                if (modalContainer) modalContainer.classList.add("is-empty");
+                if (btnToggleModo) btnToggleModo.style.display = "none";
+                setModoEdicion(false);
                 actualizarMiniaturaCalendario(fechaISO, null, null);
               } else if (data.nueva_portada) {
-                // Si promovió a otra foto como portada
-                const siguienteCard = contenedorFotos.querySelector(`.media-item[data-id="${data.nueva_portada.id}"]`);
+                const siguienteCard = contenedorFotos.querySelector(`.media-card[data-id="${data.nueva_portada.id}"], .media-item[data-id="${data.nueva_portada.id}"]`);
                 if (siguienteCard) {
                   siguienteCard.classList.add("is-cover-media");
-                  const pDiv = siguienteCard.querySelector(".media-item__preview");
-                  if (pDiv && !pDiv.querySelector(".media-item__badge")) {
+                  const sMediaContent = siguienteCard.querySelector(".media-card__content");
+                  if (sMediaContent && !sMediaContent.querySelector(".media-card__cover-badge")) {
                     const bg = document.createElement("span");
-                    bg.className = "media-item__badge";
-                    bg.textContent = "Portada";
-                    pDiv.appendChild(bg);
+                    bg.className = "media-card__cover-badge";
+                    bg.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Portada`;
+                    sMediaContent.appendChild(bg);
                   }
-                  const sBtn = siguienteCard.querySelector(".btn-media-action--preview");
+                  const sBtn = siguienteCard.querySelector(".btn-media-control--preview");
                   if (sBtn) {
                     sBtn.classList.add("is-active");
-                    sBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Portada del día`;
+                    sBtn.title = "Portada del día";
+                    sBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Portada</span>`;
                   }
                 }
                 actualizarMiniaturaCalendario(fechaISO, data.nueva_portada.ruta_archivo, data.nueva_portada.tipo_media);
@@ -268,7 +406,6 @@
             }, 200);
           } else {
             btnDelete.disabled = false;
-            btnDelete.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Eliminar`;
             alert(data.error || "No se pudo eliminar el archivo.");
           }
         })
@@ -278,22 +415,23 @@
         });
     });
 
-    actionsDiv.appendChild(btnPreview);
-    actionsDiv.appendChild(btnDelete);
+    controlsTop.appendChild(btnPreview);
+    controlsTop.appendChild(btnDelete);
 
-    infoDiv.appendChild(typeDiv);
-    infoDiv.appendChild(actionsDiv);
+    // Fila Inferior de Controles: Flechas de Reordenar (Izquierda / Derecha)
+    const controlsBottom = document.createElement("div");
+    controlsBottom.className = "media-card__controls-bottom";
 
-    // Botones de reordenamiento (Arriba / Abajo)
-    const orderBtnsDiv = document.createElement("div");
-    orderBtnsDiv.className = "media-item__order-btns";
+    const orderBtnsGroup = document.createElement("div");
+    orderBtnsGroup.className = "media-card__order-btns media-item__order-btns";
 
-    const btnUp = document.createElement("button");
-    btnUp.type = "button";
-    btnUp.className = "btn-order-arrow btn-order-up";
-    btnUp.title = "Mover antes";
-    btnUp.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>`;
-    btnUp.addEventListener("click", () => {
+    const btnPrev = document.createElement("button");
+    btnPrev.type = "button";
+    btnPrev.className = "btn-order-arrow btn-order-prev btn-order-up";
+    btnPrev.title = "Mover antes";
+    btnPrev.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>`;
+    btnPrev.addEventListener("click", (e) => {
+      e.stopPropagation();
       const prev = card.previousElementSibling;
       if (prev) {
         contenedorFotos.insertBefore(card, prev);
@@ -302,12 +440,13 @@
       }
     });
 
-    const btnDown = document.createElement("button");
-    btnDown.type = "button";
-    btnDown.className = "btn-order-arrow btn-order-down";
-    btnDown.title = "Mover después";
-    btnDown.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
-    btnDown.addEventListener("click", () => {
+    const btnNext = document.createElement("button");
+    btnNext.type = "button";
+    btnNext.className = "btn-order-arrow btn-order-next btn-order-down";
+    btnNext.title = "Mover después";
+    btnNext.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`;
+    btnNext.addEventListener("click", (e) => {
+      e.stopPropagation();
       const next = card.nextElementSibling;
       if (next) {
         contenedorFotos.insertBefore(next, card);
@@ -316,28 +455,43 @@
       }
     });
 
-    orderBtnsDiv.appendChild(btnUp);
-    orderBtnsDiv.appendChild(btnDown);
+    orderBtnsGroup.appendChild(btnPrev);
+    orderBtnsGroup.appendChild(btnNext);
+    controlsBottom.appendChild(orderBtnsGroup);
 
-    card.appendChild(previewDiv);
-    card.appendChild(infoDiv);
-    card.appendChild(orderBtnsDiv);
+    controlsDiv.appendChild(controlsTop);
+    controlsDiv.appendChild(controlsBottom);
+
+    card.appendChild(mediaContent);
+    card.appendChild(controlsDiv);
 
     return card;
   }
 
   /**
    * Abre el modal y carga los datos de la fecha seleccionada vía Fetch API.
+   * Siempre inicia estrictamente en MODO VISUALIZACIÓN (setModoEdicion(false)).
    */
   function abrirModal(fechaISO) {
     fechaActualModal = fechaISO;
     titulo.textContent = formatearTitulo(fechaISO);
     inputFecha.value = fechaISO;
 
+    // Resetear al Modo Visualización por defecto
+    setModoEdicion(false);
+
     contenedorFotos.hidden = true;
     contenedorFotos.innerHTML = "";
     mensajeVacio.hidden = true;
     loading.hidden = false;
+
+    if (modalContainer) {
+      modalContainer.classList.remove("is-empty");
+    }
+
+    if (btnToggleModo) {
+      btnToggleModo.style.display = "inline-flex";
+    }
 
     overlay.classList.add("is-open");
     document.body.style.overflow = "hidden";
@@ -350,6 +504,8 @@
 
         if (fotos.length === 0) {
           mensajeVacio.hidden = false;
+          if (modalContainer) modalContainer.classList.add("is-empty");
+          if (btnToggleModo) btnToggleModo.style.display = "none";
           return;
         }
 
@@ -367,9 +523,28 @@
   }
 
   function cerrarModal() {
+    cerrarReproductor();
     overlay.classList.remove("is-open");
     document.body.style.overflow = "";
+    setModoEdicion(false);
     fechaActualModal = null;
+  }
+
+  // Event Listeners del Reproductor en Grande (Lightbox)
+  if (lightboxCerrar) {
+    lightboxCerrar.addEventListener("click", cerrarReproductor);
+  }
+  if (lightboxOverlay) {
+    lightboxOverlay.addEventListener("click", (evento) => {
+      if (evento.target === lightboxOverlay) cerrarReproductor();
+    });
+  }
+
+  // Alternar Modo Edición desde el botón inferior
+  if (btnToggleModo) {
+    btnToggleModo.addEventListener("click", () => {
+      setModoEdicion(!modoEdicionActivo);
+    });
   }
 
   // Event Listeners del Modal
@@ -382,8 +557,16 @@
     if (evento.target === overlay) cerrarModal();
   });
   document.addEventListener("keydown", (evento) => {
-    if (evento.key === "Escape" && overlay.classList.contains("is-open")) {
-      cerrarModal();
+    if (evento.key === "Escape") {
+      // Si el reproductor en grande está abierto, solo cerramos el reproductor
+      if (lightboxOverlay && lightboxOverlay.classList.contains("is-open")) {
+        cerrarReproductor();
+        return;
+      }
+      // Si el modal de recuerdos está abierto, lo cerramos
+      if (overlay.classList.contains("is-open")) {
+        cerrarModal();
+      }
     }
   });
 
