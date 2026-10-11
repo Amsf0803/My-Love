@@ -11,7 +11,7 @@ pueda importar la app fácilmente:
 """
 
 import os
-import datetime
+from datetime import datetime
 import pytz
 
 from flask import Flask, request, render_template
@@ -36,16 +36,19 @@ def create_app(config_name=None):
 
     # --- LÓGICA DE SORPRESA DE CUMPLEAÑOS ---
     @app.context_processor
-    def inyectar_variables_cumple():
+    def inyectar_variables():
+        # Aseguramos la zona horaria de México
         tz = pytz.timezone('America/Mexico_City')
-        ahora = datetime.datetime.now(tz)
+        hoy = datetime.now(tz)
         
-        # Es true si es 9 de noviembre O si pones ?test_cumple=1 en la URL
-        es_su_cumple = (ahora.month == 11 and ahora.day == 9)
-        modo_prueba = request.args.get('test_cumple') == '1'
+        # Definimos la fecha de su cumpleaños (9 de noviembre del año actual)
+        fecha_cumple = datetime(hoy.year, 11, 9, tzinfo=tz)
         
-        return dict(mostrar_regalo=(es_su_cumple or modo_prueba))
-
+        # El regalo flotante solo sale el mero día (o si usas ?test_cumple=1)
+        es_mero_dia = (hoy.month == 11 and hoy.day == 9) or request.args.get('test_cumple') == '1'
+        ya_paso_cumple = hoy >= fecha_cumple or request.args.get('test_cumple') == '1'
+        
+        return dict(mostrar_regalo=es_mero_dia, mostrar_boton_permanente=ya_paso_cumple)
     @app.route('/feliz-cumpleanos')
     def feliz_cumpleanos():
         return render_template('cumpleanos.html')

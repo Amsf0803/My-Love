@@ -2105,3 +2105,35 @@ main {
     60% { transform: translateX(-50%) scale(1); }
     100% { transform: translateX(-50%) scale(1); }
 }
+
+
+/* Pintar la celda de azul */
+.dia-cumple {
+    background-color: rgba(0, 119, 182, 0.2) !important;
+    border: 2px solid #00b4d8 !important;
+    box-shadow: 0 0 10px rgba(0, 180, 216, 0.4) inset;
+    position: relative;
+}
+
+/* El botón pequeño dentro del calendario */
+.btn-cumple-calendario {
+    display: block;
+    margin-top: 8px;
+    background: #0077b6;
+    color: #ffffff !important;
+    text-align: center;
+    border-radius: 8px;
+    padding: 4px 2px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-cumple-calendario:hover {
+    background: #00b4d8;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 180, 216, 0.6);
+}

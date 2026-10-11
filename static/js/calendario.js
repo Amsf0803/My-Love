@@ -547,9 +547,40 @@
     });
   }
 
-  // Event Listeners del Modal
+// Event Listeners del Modal y Sorpresa de Cumpleaños
   document.querySelectorAll(".calendar-day[data-fecha]").forEach((celda) => {
-    celda.addEventListener("click", () => abrirModal(celda.dataset.fecha));
+    
+    celda.addEventListener("click", (e) => {
+      // Si hizo clic en el botón de sorpresa, NO abrimos el modal de fotos
+      if (e.target.closest('.btn-cumple-calendario')) return;
+      abrirModal(celda.dataset.fecha);
+    });
+
+    // Validar si la celda es el 9 de Noviembre
+    const fechaString = celda.dataset.fecha; // Ej: "2026-11-09"
+    if (fechaString && fechaString.endsWith("-11-09")) {
+        
+        // 1. Pintamos la celda de azul
+        celda.classList.add("dia-cumple");
+
+        // 2. Verificamos la fecha actual (En JS, Enero es 0, Noviembre es 10)
+        const hoy = new Date();
+        const mesActual = hoy.getMonth(); 
+        const diaActual = hoy.getDate();
+
+        // Si estamos a 9 de noviembre o después, O en diciembre en adelante
+        if ((mesActual === 10 && diaActual >= 9) || mesActual > 10) {
+            
+            // Creamos el botón
+            const btnSorpresa = document.createElement("a");
+            btnSorpresa.href = "/feliz-cumpleanos"; 
+            btnSorpresa.className = "btn-cumple-calendario";
+            btnSorpresa.innerHTML = "🎁 Sorpresa";
+            
+            // Lo metemos en la celda
+            celda.appendChild(btnSorpresa);
+        }
+    }
   });
 
   botonCerrar.addEventListener("click", cerrarModal);
