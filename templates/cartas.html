@@ -16,6 +16,15 @@
 
     <form method="POST" action="{{ url_for('cartas.nueva_carta') }}" enctype="multipart/form-data" id="form-carta">
       <input type="hidden" name="tipo" id="carta-tipo" value="texto">
+      
+      <!-- NUEVO: Selector de Autor -->
+      <div class="field" style="margin-bottom: 15px;">
+        <label for="autor">¿Quién escribe esta carta?</label>
+        <select name="autor" id="autor" class="form-control" required style="width: 100%; padding: 8px; border-radius: 5px;">
+          <option value="André" selected>André 👻</option>
+          <option value="Karla">Karla 💗</option>
+        </select>
+      </div>
 
       <div class="tab-panel is-active" data-panel="texto">
         <div class="field">
@@ -45,25 +54,64 @@
 
   {% if cartas %}
     <div class="timeline">
+
       {% for carta in cartas %}
         <div class="timeline-entry">
           <span class="timeline-date">{{ carta.fecha_creacion.strftime('%d de %B, %Y · %H:%M') }}</span>
-          <div class="letter-card">
-            {% if carta.tipo == 'texto' %}
-              <p>{{ carta.contenido_texto }}</p>
-            {% elif carta.ruta_archivo and carta.ruta_archivo.lower().endswith('.pdf') %}
-              <div class="letter-card__file">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
-                <a href="{{ url_for('static', filename=carta.ruta_archivo) }}" target="_blank" rel="noopener">Ver documento PDF</a>
-              </div>
-            {% else %}
-              <a href="{{ url_for('static', filename=carta.ruta_archivo) }}" target="_blank" rel="noopener">
-                <img class="letter-thumb" src="{{ url_for('static', filename=carta.ruta_archivo) }}" alt="Carta adjunta">
-              </a>
-            {% endif %}
+          
+          <!-- Se inyecta la clase CSS dependiendo del autor -->
+          <div class="letter-card {% if carta.autor == 'Karla' %}bg-karla{% else %}bg-andre{% endif %}">
+            
+            <div class="letter-header">
+              <span class="etiqueta-autor">
+                De: 
+                {% if carta.autor == 'Karla' %}
+                  Karla 💗
+                {% else %}
+                  André 👻
+                {% endif %}
+              </span>
+              <button type="button" class="btn-editar-carta" onclick="toggleEdit({{ carta.id }})">✏️ Editar</button>
+            </div>
+
+            <!-- MODO VISUALIZACIÓN -->
+            <div id="view-carta-{{ carta.id }}">
+              {% if carta.tipo == 'texto' %}
+                <p>{{ carta.contenido_texto }}</p>
+              {% elif carta.ruta_archivo and carta.ruta_archivo.lower().endswith('.pdf') %}
+                <div class="letter-card__file">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+                  <a href="{{ url_for('static', filename=carta.ruta_archivo) }}" target="_blank" rel="noopener">Ver documento PDF</a>
+                </div>
+              {% else %}
+                <a href="{{ url_for('static', filename=carta.ruta_archivo) }}" target="_blank" rel="noopener">
+                  <img class="letter-thumb" src="{{ url_for('static', filename=carta.ruta_archivo) }}" alt="Carta adjunta">
+                </a>
+              {% endif %}
+            </div>
+
+            <!-- MODO EDICIÓN (Oculto por defecto) -->
+            <div id="edit-carta-{{ carta.id }}" style="display: none; margin-top: 15px;">
+              <form method="POST" action="{{ url_for('cartas.editar_carta', carta_id=carta.id) }}">
+                <select name="autor" class="form-control" style="margin-bottom:10px; width:100%; padding: 5px;">
+                  <option value="André" {% if carta.autor != 'Karla' %}selected{% endif %}>André 👻</option>
+                  <option value="Karla" {% if carta.autor == 'Karla' %}selected{% endif %}>Karla 💗</option>
+                </select>
+                
+                {% if carta.tipo == 'texto' %}
+                  <textarea name="contenido_texto" class="form-control" style="margin-bottom:10px; width:100%; min-height: 100px; padding: 10px;">{{ carta.contenido_texto }}</textarea>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary btn-sm" style="padding: 5px 10px;">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary btn-sm" style="padding: 5px 10px;" onclick="toggleEdit({{ carta.id }})">Cancelar</button>
+              </form>
+            </div>
+
           </div>
         </div>
       {% endfor %}
+
+
     </div>
   {% else %}
     <p class="empty-state">Todavía no hay cartas guardadas. Escribe la primera. 💌</p>

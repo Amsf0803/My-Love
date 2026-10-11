@@ -11,8 +11,10 @@ pueda importar la app fácilmente:
 """
 
 import os
+import datetime
+import pytz
 
-from flask import Flask
+from flask import Flask, request, render_template
 
 from config.settings import config_by_name
 from extensions import db
@@ -31,6 +33,23 @@ def create_app(config_name=None):
     # --------------------------------------
 
     db.init_app(app)
+
+    # --- LÓGICA DE SORPRESA DE CUMPLEAÑOS ---
+    @app.context_processor
+    def inyectar_variables_cumple():
+        tz = pytz.timezone('America/Mexico_City')
+        ahora = datetime.datetime.now(tz)
+        
+        # Es true si es 9 de noviembre O si pones ?test_cumple=1 en la URL
+        es_su_cumple = (ahora.month == 11 and ahora.day == 9)
+        modo_prueba = request.args.get('test_cumple') == '1'
+        
+        return dict(mostrar_regalo=(es_su_cumple or modo_prueba))
+
+    @app.route('/feliz-cumpleanos')
+    def feliz_cumpleanos():
+        return render_template('cumpleanos.html')
+    # ----------------------------------------
 
     # --- Registrar Blueprints ---
     from routes.auth import auth_bp

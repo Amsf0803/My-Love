@@ -18,7 +18,9 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <canvas id="starfield" aria-hidden="true"></canvas>
-
+  {% if mostrar_regalo %}
+    <a href="{{ url_for('feliz_cumpleanos') }}" id="btn-regalo-sorpresa">🎁</a>
+  {% endif %}
   <div class="app-shell">
     {% block navbar %}
       {% if session.get('logueado') %}

@@ -40,12 +40,10 @@ def index():
 @login_required
 def nueva_carta():
     """
-    Crea una nueva carta. El formulario en el frontend debe enviar:
-        - tipo: 'texto' o 'archivo'
-        - contenido_texto: (si tipo == 'texto')
-        - archivo: (si tipo == 'archivo')
+    Crea una nueva carta.
     """
     tipo = request.form.get("tipo")
+    autor = request.form.get("autor", "André") # <-- Atrapamos al autor
 
     if tipo == "texto":
         contenido = (request.form.get("contenido_texto") or "").strip()
@@ -53,7 +51,7 @@ def nueva_carta():
             flash("Escribe algo antes de guardar la carta.", "error")
             return redirect(url_for("cartas.index"))
 
-        carta = Carta(tipo="texto", contenido_texto=contenido)
+        carta = Carta(tipo="texto", contenido_texto=contenido, autor=autor)
         db.session.add(carta)
         db.session.commit()
         flash("Carta guardada. 💌", "success")
@@ -81,11 +79,33 @@ def nueva_carta():
 
         ruta_relativa = f"uploads/cartas/{nombre_final}"
 
-        carta = Carta(tipo="archivo", ruta_archivo=ruta_relativa)
+        carta = Carta(tipo="archivo", ruta_archivo=ruta_relativa, autor=autor)
         db.session.add(carta)
         db.session.commit()
         flash("Carta guardada. 💌", "success")
         return redirect(url_for("cartas.index"))
 
     flash("Tipo de carta inválido.", "error")
+    return redirect(url_for("cartas.index"))
+
+
+@cartas_bp.route("/cartas/editar/<int:carta_id>", methods=["POST"])
+@login_required
+def editar_carta(carta_id):
+    """
+    Edita el autor y el texto de una carta existente.
+    """
+    carta = Carta.query.get_or_404(carta_id)
+    
+    nuevo_autor = request.form.get("autor")
+    if nuevo_autor in ["André", "Karla"]:
+        carta.autor = nuevo_autor
+        
+    if carta.tipo == "texto":
+        nuevo_contenido = request.form.get("contenido_texto")
+        if nuevo_contenido:
+            carta.contenido_texto = nuevo_contenido.strip()
+            
+    db.session.commit()
+    flash("Carta actualizada correctamente. ✏️", "success")
     return redirect(url_for("cartas.index"))

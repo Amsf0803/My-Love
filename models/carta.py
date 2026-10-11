@@ -21,7 +21,7 @@ class Carta(db.Model):
 
     # Ruta relativa dentro de /static, solo aplica si tipo == 'archivo'
     ruta_archivo = db.Column(db.String(255), nullable=True)
-
+    
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     def to_dict(self):
@@ -35,3 +35,5 @@ class Carta(db.Model):
 
     def __repr__(self):
         return f"<Carta id={self.id} tipo={self.tipo}>"
+
+    autor = db.Column(db.String(50), default='André')
