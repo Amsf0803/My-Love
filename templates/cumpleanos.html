@@ -4,6 +4,11 @@
 
 {% block content %}
 <div id="pantalla-cumple">
+
+    <div id="pantalla-inicio-interaccion">
+        <h2>🎁</h2>
+        <p>Toca la pantalla para abrir tu sorpresa</p>
+    </div>
     <h1 id="titulo-cumple">¡Feliz Cumpleaños Amorcito!</h1>
 
     <div id="contenido-cumple">
@@ -114,10 +119,21 @@
 
             <p>Espero que te la pases increíble en tu día.</p>
             <p>Con amor,</p>
-            <p>Tu noviecito de máquinas 💗</p>
+            <p>Tu noviecito de máquinas 
+                <span id="btn-voz-secreta" title="Toca para escuchar un secreto...">💗</span>
+            </p>
+            <!-- Audio oculto para tu voz -->
+            <audio id="audio-voz" src="{{ url_for('static', filename='cumple/nota_voz.mp3') }}"></audio>
             
             <!-- Limpiamos los flotantes para que la carta termine bien -->
             <div style="clear: both;"></div>
+        </div> <!-- AQUÍ TERMINA LA CARTA GLASS -->
+
+        <!-- GENERADOR DE RAZONES -->
+        <div class="tarjeta-razones">
+            <h3>💌 Mis razones para amarte</h3>
+            <p id="texto-razon">Toca el botón para descubrir una razón...</p>
+            <button id="btn-razon" onclick="generarRazon()">Leer una razón ✨</button>
         </div>
 
         <!-- Carrusel Scroll Snap -->
@@ -163,7 +179,7 @@
             <!-- NUEVO: Control de volumen -->
             <div class="control-volumen">
                 <span>🔊</span>
-                <input type="range" id="barra-volumen" min="0" max="1" step="0.01" value="1">
+                <input type="range" id="barra-volumen" min="0" max="1" step="0.01" value="0.1">
             </div>
         </div>
     </div>
@@ -172,22 +188,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
-    // --- 1. CONFIGURACIÓN DEL CONFETI AZUL ---
-    var duration = 3 * 1000;
-    var animationEnd = Date.now() + duration;
-    var coloresAzules = ['#0077b6', '#00b4d8', '#90e0ef', '#03045e', '#caf0f8'];
-
-    (function frame() {
-        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: coloresAzules });
-        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: coloresAzules });
-
-        if (Date.now() < animationEnd) {
-            requestAnimationFrame(frame);
-        } else {
-            document.getElementById('pantalla-cumple').classList.add('revelado');
-        }
-    }());
-
     // --- 2. LÓGICA DEL REPRODUCTOR DE MÚSICA (MORAT) ---
     const playlist = [
         {
@@ -299,16 +299,124 @@
 
     reproductor.addEventListener("ended", () => cambiarCancion(1));
 
-    // 3. INICIAMOS AL CARGAR LA PÁGINA
-    window.onload = function() {
-        cargarCancion(0);
-        reproductor.play().then(() => {
-            disco.classList.add("girando");
-            btnPlay.textContent = "⏸";
-        }).catch(() => {
-            console.log("El navegador bloqueó el autoplay. El usuario debe darle play manualmente.");
-        });
-    };
+// --- LÓGICA DEL MENSAJE DE VOZ ---
+    const audioVoz = document.getElementById("audio-voz");
+    const btnVoz = document.getElementById("btn-voz-secreta");
+    const dedoPista = document.getElementById("pista-dedo"); // Seleccionamos el dedo
+
+    btnVoz.addEventListener("click", () => {
+        // En cuanto descubre el secreto, el dedo desaparece para siempre
+        if (dedoPista) {
+            dedoPista.style.display = "none";
+        }
+
+        if (audioVoz.paused) {
+            // Pausar Morat
+            reproductor.pause();
+            disco.classList.remove("girando");
+            btnPlay.textContent = "▶";
+            
+            // Reproducir tu voz y cambiar a latido rápido
+            audioVoz.play();
+            btnVoz.classList.add("latiendo");
+        } else {
+            // Si lo vuelve a tocar, se pausa y regresa al latido suave
+            audioVoz.pause();
+            btnVoz.classList.remove("latiendo");
+        }
+    });
+
+    // Cuando tu nota de voz termina, vuelve a sonar Morat automáticamente
+    audioVoz.addEventListener("ended", () => {
+        btnVoz.classList.remove("latiendo");
+        reproductor.play();
+        disco.classList.add("girando");
+        btnPlay.textContent = "⏸";
+    });
+
+// --- LÓGICA DEL GENERADOR DE RAZONES ---
+    // Aquí puedes agregar todas las que quieras (incluso llegar a 100)
+    const razones = [
+        "Porque me haces sentir el chico más amado del mundo.",
+        "Por tus hermosos labios y ese gloss que no dura ni dos besos jajaja.",
+        "Porque eres mi primer pensamiento al despertar.",
+        "Porque estás siempre en mis sueños",
+        "Por tu inteligencia y lo interesante que es hablar contigo.",
+        "Porque a tu lado hasta el silencio es súper cómodo.",
+        "Por la forma en que tomas mi mano o abrazas mi brazo.",
+        "Porque me aceptaste tal y como soy.",
+        "Porque tienes la mirada más bonita de todo el universo.",
+        "Por tu hermosa risa",
+        "Cuando nos besamos que agarras mi lengua jejeje",
+        "Por tener un humor parecido",
+        "Por tu hermoso pelo (eso incluye cuando esta amarrado)",
+        "Por estar a mi lado siempre",
+        "Por apoyarme siempre",
+        "Por escucharme cada que hablo de algo que me apasiona",
+        "Por preocuparte por mi",
+        "Por ser la razón de mi felicidad día con día",
+        "Porque simplemente eres tú, mi amor perfecto y destinado."
+    ];
+
+    let indiceAnterior = -1; 
+
+    function generarRazon() {
+        const textoEl = document.getElementById("texto-razon");
+        let nuevoIndice;
+        
+        // Sigue calculando un número al azar mientras sea igual al anterior
+        do {
+            nuevoIndice = Math.floor(Math.random() * razones.length);
+        } while (nuevoIndice === indiceAnterior);
+        
+        // Guardamos este nuevo número para la próxima vez que presione el botón
+        indiceAnterior = nuevoIndice;
+        
+        // Desvanecer el texto
+        textoEl.style.opacity = 0;
+        
+        // Cambiar el texto y volverlo a aparecer (después de 400ms)
+        setTimeout(() => {
+            textoEl.textContent = razones[nuevoIndice];
+            textoEl.style.opacity = 1;
+        }, 400);
+    }
+
+// --- 3. LÓGICA DE ARRANQUE SINCRONIZADO (MÚSICA + CONFETI) ---
+    const pantallaInicio = document.getElementById("pantalla-inicio-interaccion");
+    
+    // Cargamos la canción en silencio al entrar a la página
+    cargarCancion(0);
+
+    // Cuando ella toque la pantalla... ¡Empieza la magia!
+    pantallaInicio.addEventListener("click", () => {
+        // 1. Desaparece el botón de inicio suavemente
+        pantallaInicio.style.opacity = 0;
+        setTimeout(() => pantallaInicio.remove(), 500);
+
+        // 2. ¡SUENA MORAT AL INSTANTE!
+        reproductor.play();
+        disco.classList.add("girando");
+        btnPlay.textContent = "⏸";
+
+        // 3. EXPLOTA EL CONFETI AL MISMO TIEMPO
+        var duration = 3 * 1000;
+        var animationEnd = Date.now() + duration;
+        var coloresAzules = ['#0077b6', '#00b4d8', '#90e0ef', '#03045e', '#caf0f8'];
+
+        (function frame() {
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: coloresAzules });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: coloresAzules });
+
+            if (Date.now() < animationEnd) {
+                requestAnimationFrame(frame);
+            } else {
+                // 4. Y 3 SEGUNDOS DESPUÉS, SE REVELA LA CARTA Y EL TEXTO SE CENTRA
+                document.getElementById('pantalla-cumple').classList.add('revelado');
+            }
+        }());
+    });
+
 </script>
 
 <style>
@@ -480,7 +588,7 @@ body, html {
 }
 .flor-lat-der2 {
     top: 40%; /* Flor 5*/
-    right: -125px;
+    right: -135px;
     width: 250px;
     transform: rotate(-70deg);
 }
@@ -688,6 +796,127 @@ input[type="range"]::-webkit-slider-thumb:hover {
     .controles-musica button { font-size: 1.5rem; }
     #titulo-cancion { font-size: 0.9rem; }
 }
+
+/* --- ANIMACIONES DEL MENSAJE SECRETO --- */
+
+/* El dedo apuntando que se mueve de lado a lado */
+#pista-dedo {
+    display: inline-block;
+    font-size: 1.2rem;
+    animation: apuntar 1s infinite alternate ease-in-out;
+    margin-right: 3px;
+}
+
+@keyframes apuntar {
+    0% { transform: translateX(-5px); opacity: 0.7; }
+    100% { transform: translateX(2px); opacity: 1; }
+}
+
+/* El corazón latiendo suavemente ANTES de presionarlo */
+#btn-voz-secreta {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 1.2rem;
+    animation: latido-suave 1.5s infinite; /* Latiendo relajado */
+}
+
+@keyframes latido-suave {
+    0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255, 105, 180, 0.4)); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 8px rgba(255, 105, 180, 0.9)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(255, 105, 180, 0.4)); }
+}
+
+/* El corazón latiendo RÁPIDO cuando ya está tu voz sonando */
+.latiendo {
+    animation: latido-acelerado 0.8s infinite !important; /* Más rápido y fuerte */
+}
+
+@keyframes latido-acelerado {
+    0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255, 105, 180, 0.8)); }
+    20% { transform: scale(1.3); filter: drop-shadow(0 0 15px rgba(255, 105, 180, 1)); }
+    40% { transform: scale(1); }
+    60% { transform: scale(1.3); filter: drop-shadow(0 0 15px rgba(255, 105, 180, 1)); }
+    100% { transform: scale(1); }
+}
+
+
+/* --- ESTILOS DEL GENERADOR DE RAZONES --- */
+.tarjeta-razones {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(144, 224, 239, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 30px auto;
+    width: 85%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.tarjeta-razones h3 {
+    color: #90e0ef;
+    margin-top: 0;
+    font-size: 1.4rem;
+}
+
+#texto-razon {
+    font-size: 1.1rem;
+    color: #e2e8f0;
+    min-height: 60px; /* Evita que la tarjeta brinque cuando cambia el texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s ease;
+}
+
+#btn-razon {
+    background: #0077b6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+#btn-razon:hover {
+    background: #00b4d8;
+    transform: scale(1.05);
+}
+
+
+/* --- PANTALLA PARA PERMISO DE AUDIO --- */
+#pantalla-inicio-interaccion {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100dvh;
+    background-color: #0d1117; /* Mismo color de fondo */
+    z-index: 999995; /* Arriba del texto, abajo del menú de hamburguesa */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #90e0ef;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+}
+
+#pantalla-inicio-interaccion h2 {
+    font-size: 5rem;
+    margin: 0;
+    animation: latido-corazon 1.5s infinite; /* Usa la misma animación que tu botón secreto */
+}
+
+#pantalla-inicio-interaccion p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 15px;
+    opacity: 0.8;
+}
+
 
 </style>
 {% endblock %}
