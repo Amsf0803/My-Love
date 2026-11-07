@@ -2137,7 +2137,6 @@ main {
     transform: scale(1.05);
     box-shadow: 0 4px 10px rgba(0, 180, 216, 0.6);
 }
-
 /* --- RESCATE DEL MENÚ DE NAVEGACIÓN --- */
 /* Aseguramos que la caja principal que envuelve al menú esté por encima de TODO */
 header, 
@@ -2146,4 +2145,34 @@ nav,
 .header {
     position: relative; 
     z-index: 9999999 !important; /* Más alto que la pantalla de inicio (999995) */
+}
+
+/* --- FIX DEFINITIVO: Empujar el modal debajo del menú en celular --- */
+@media (max-width: 768px) {
+    /* 1. Empujamos toda la ventana hacia abajo para librar la barra superior */
+    .modal-content, #modal-dia {
+        margin-top: 85px !important; /* Espacio para que la ventana inicie debajo del navbar */
+        max-height: calc(100dvh - 110px) !important; /* Ajusta la altura para que no se salga por abajo */
+        position: relative !important;
+    }
+
+    /* 2. Regresamos la tachita a su esquina superior derecha, pero DENTRO de la ventana que ya bajamos */
+    #modal-dia-cerrar {
+        position: absolute !important;
+        top: 15px !important;
+        right: 15px !important; 
+        left: auto !important; /* Limpiamos la regla anterior del lado izquierdo */
+        z-index: 1000060 !important;
+    }
+}
+
+.dot-cumple {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #00b4d8;
+    box-shadow: 0 0 8px rgba(0, 180, 216, 0.8);
+    margin-right: 6px;
+    vertical-align: middle;
 }

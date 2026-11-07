@@ -119,7 +119,9 @@
 
             <p>Espero que te la pases increíble en tu día.</p>
             <p>Con amor,</p>
-            <p>Tu noviecito de máquinas 
+            <p class="firma-elegante">Tu noviecito de máquinas   
+                <span>  </span>
+                <span id="pista-dedo">   👉</span>
                 <span id="btn-voz-secreta" title="Toca para escuchar un secreto...">💗</span>
             </p>
             <!-- Audio oculto para tu voz -->
@@ -136,6 +138,7 @@
             <button id="btn-razon" onclick="generarRazon()">Leer una razón ✨</button>
         </div>
 
+        <h3 class="titulo-carrusel">Un pedacito de ti y mis fotos fav (Unas de ellas) ✨</h3>
         <!-- Carrusel Scroll Snap -->
         <div class="carrusel-cumple">
             <img src="{{ url_for('static', filename='img/cumple/foto1.jpg') }}" alt="Recuerdo">
@@ -229,7 +232,6 @@
 
     let indiceActual = 0;
 
-    // 1. PRIMERO OBTENEMOS TODOS LOS ELEMENTOS
     const reproductor = document.getElementById("audio-player");
     const disco = document.getElementById("disco-portada");
     const tituloTexto = document.getElementById("titulo-cancion");
@@ -239,7 +241,6 @@
     const textoTiempoActual = document.getElementById("tiempo-actual");
     const textoTiempoTotal = document.getElementById("tiempo-total");
 
-    // 2. LUEGO DEFINIMOS LAS FUNCIONES Y EVENTOS
     function formatearTiempo(segundos) {
         if (isNaN(segundos)) return "0:00";
         const min = Math.floor(segundos / 60);
@@ -420,6 +421,10 @@
 </script>
 
 <style>
+
+/* Importar fuente cursiva elegante desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+
 /* --- ESTILOS GENERALES Y ANIMACIONES DE PANTALLA --- */
 #pantalla-cumple {
     position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
@@ -447,6 +452,7 @@
 }
 
 /* --- ESTILOS DE LA CARTA Y TEXTO ENVOLVENTE --- */
+
 
 p{
     font-size: 20px;
@@ -620,7 +626,24 @@ body, html {
     transform: rotate(-120deg);
 }
 
+/* --- TÍTULO DEL CARRUSEL --- */
+.titulo-carrusel {
+    font-family: 'Alex Brush', cursive; /* Usa la misma letra romántica de tu firma */
+    font-size: 3.5rem;
+    color: #ffffff;
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 5px;
+    font-weight: normal;
+    text-shadow: 0 0 15px rgba(0, 180, 216, 0.8), 0 2px 4px rgba(0,0,0,0.5); /* Brillo azulado y sombrita */
+    animation: flotar-texto 3s ease-in-out infinite; /* Un ligero movimiento mágico */
+}
 
+@keyframes flotar-texto {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
 
 /* --- ESTILOS DEL REPRODUCTOR FLOTANTE (VERSIÓN GRANDE) --- */
 #reproductor-musica {
@@ -795,6 +818,11 @@ input[type="range"]::-webkit-slider-thumb:hover {
     .disco { width: 45px; height: 45px; }
     .controles-musica button { font-size: 1.5rem; }
     #titulo-cancion { font-size: 0.9rem; }
+
+    .titulo-carrusel {
+        font-size: 2.5rem;
+        margin-top: 30px;
+    }
 }
 
 /* --- ANIMACIONES DEL MENSAJE SECRETO --- */
@@ -915,6 +943,19 @@ input[type="range"]::-webkit-slider-thumb:hover {
     font-weight: bold;
     margin-top: 15px;
     opacity: 0.8;
+}
+
+
+/* --- ESTILO PARA TU FIRMA --- */
+.firma-elegante {
+    font-family: 'Great Vibes', cursive;
+    font-size: 2.8rem; /* Las fuentes cursivas suelen ser más pequeñas, por eso le subimos el tamaño */
+    color: #90e0ef; /* El color azulito brillante que estás usando en el diseño */
+    text-align: right; /* La alineamos a la derecha como una firma real */
+    margin-top: 30px; /* Le damos espacio con el párrafo anterior */
+    margin-right: 20px;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Un poco de sombra para que resalte en el cristal */
 }
 
 

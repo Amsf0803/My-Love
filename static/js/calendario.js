@@ -1,12 +1,13 @@
 /**
- * Módulo de Calendario Interactivo · Mi Universo
+- Módulo de Calendario Interactivo · Mi Universo
  *
- * Funcionalidades:
- * - Carga asíncrona de recuerdos por día.
- * - Eliminación total física y lógica con confirmación (/delete-media).
- * - Selección de portada del día en tiempo real (/set-preview).
- * - Reordenamiento con flechas y persistencia (/reorder-media).
- * - Cambio de portada general del calendario con anti-caché (/set-calendar-cover).
+- Funcionalidades:
+- Carga asíncrona de recuerdos por día.
+- Eliminación total física y lógica con confirmación (/delete-media).
+- Selección de portada del día en tiempo real (/set-preview).
+- Reordenamiento con flechas y persistencia (/reorder-media).
+- Cambio de portada general del calendario con anti-caché (/set-calendar-cover).
+- NUEVO: Scroll automático a zona de subida y leyenda dinámica de noviembre.
  */
 (function () {
   const overlay = document.getElementById("modal-dia");
@@ -52,7 +53,7 @@
   }
 
   /**
-   * Abre el reproductor de video en grande y reproduce inmediatamente con AUDIO.
+- Abre el reproductor de video en grande y reproduce inmediatamente con AUDIO.
    */
   function abrirReproductorVideo(url) {
     if (!lightboxOverlay || !lightboxVideo) return;
@@ -79,7 +80,7 @@
   }
 
   /**
-   * Abre la foto en grande dentro del lightbox.
+- Abre la foto en grande dentro del lightbox.
    */
   function abrirVisorFoto(url) {
     if (!lightboxOverlay || !lightboxImg) return;
@@ -99,7 +100,7 @@
   }
 
   /**
-   * Cierra el reproductor en grande y detiene el audio/video por completo.
+- Cierra el reproductor en grande y detiene el audio/video por completo.
    */
   function cerrarReproductor() {
     if (!lightboxOverlay) return;
@@ -121,9 +122,7 @@
   }
 
   /**
-   * Control del Sistema de Doble Estado:
-   * false -> Modo Visualización (por defecto): CERO controles visibles.
-   * true  -> Modo Edición: Muestra controles sobre cada recuerdo y botón de subida.
+- Control del Sistema de Doble Estado
    */
   function setModoEdicion(activar) {
     modoEdicionActivo = Boolean(activar);
@@ -137,9 +136,6 @@
     }
   }
 
-  /**
-   * Actualiza la miniatura en la casilla del calendario para una fecha dada.
-   */
   function actualizarMiniaturaCalendario(fechaISO, nuevaRuta, tipoMedia) {
     const thumbContainer = document.getElementById(`thumb-${fechaISO}`);
     if (!thumbContainer) return;
@@ -167,9 +163,6 @@
     }
   }
 
-  /**
-   * Actualiza los estados de los botones de flecha (primer y último elemento).
-   */
   function refrescarEstadosFlechas() {
     const items = contenedorFotos.querySelectorAll(".media-card, .media-item");
     items.forEach((item, index) => {
@@ -180,9 +173,6 @@
     });
   }
 
-  /**
-   * Guarda el nuevo orden de los elementos en el backend.
-   */
   function guardarNuevoOrden() {
     const items = contenedorFotos.querySelectorAll(".media-card, .media-item");
     const ordenIds = Array.from(items).map((item) => Number(item.dataset.id)).filter(Boolean);
@@ -203,10 +193,6 @@
       .catch((err) => console.error("Error de red al reordenar:", err));
   }
 
-  /**
-   * Genera el DOM de un elemento multimedia con tarjeta visual y controles flotantes.
-   * Los controles están en el DOM pero ocultos por defecto con CSS hasta activar .modo-edicion.
-   */
   function crearMediaCard(foto, fechaISO) {
     const card = document.createElement("div");
     card.className = `media-card media-item ${foto.is_preview ? "is-cover-media" : ""}`;
@@ -215,7 +201,6 @@
     const ruta = foto.ruta_archivo || foto.ruta;
     const esVideo = foto.tipo_media === "video" || esVideoUrl(ruta);
 
-    // Contenedor visual del contenido (Foto o Video)
     const mediaContent = document.createElement("div");
     mediaContent.className = "media-card__content";
 
@@ -252,11 +237,8 @@
       mediaContent.appendChild(img);
     }
 
-    // Clic sobre el recuerdo en Modo Visualización para hacerlo grande
     mediaContent.addEventListener("click", () => {
-      // En modo edición no abrimos el reproductor para permitir editar libremente
       if (modoEdicionActivo) return;
-
       if (esVideo) {
         abrirReproductorVideo(`/static/${ruta}`);
       } else {
@@ -264,7 +246,6 @@
       }
     });
 
-    // Badge estático de Portada para Modo Visualización
     if (foto.is_preview) {
       const coverBadge = document.createElement("span");
       coverBadge.className = "media-card__cover-badge";
@@ -272,22 +253,16 @@
       mediaContent.appendChild(coverBadge);
     }
 
-    // Overlay translúcido de fondo para Modo Edición
     const overlayDiv = document.createElement("div");
     overlayDiv.className = "media-card__overlay";
     mediaContent.appendChild(overlayDiv);
 
-    // =======================================================================
-    // CONTROLES DE EDICIÓN (ocultos por defecto vía CSS)
-    // =======================================================================
     const controlsDiv = document.createElement("div");
     controlsDiv.className = "media-card__controls";
 
-    // Fila Superior de Controles: Portada y Eliminar
     const controlsTop = document.createElement("div");
     controlsTop.className = "media-card__controls-top";
 
-    // Botón: Usar como Portada
     const btnPreview = document.createElement("button");
     btnPreview.type = "button";
     btnPreview.className = `btn-media-control btn-media-control--preview btn-media-action--preview ${foto.is_preview ? "is-active" : ""}`;
@@ -310,7 +285,6 @@
         .then((data) => {
           btnPreview.disabled = false;
           if (data.success) {
-            // Actualizar tarjetas en el modal
             contenedorFotos.querySelectorAll(".media-card, .media-item").forEach((it) => {
               it.classList.remove("is-cover-media");
               const prevBadge = it.querySelector(".media-card__cover-badge");
@@ -334,7 +308,6 @@
             btnPreview.title = "Portada del día";
             btnPreview.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Portada</span>`;
 
-            // Actualizar celda en la grilla del calendario
             actualizarMiniaturaCalendario(fechaISO, data.ruta_archivo, data.tipo_media);
           } else {
             alert(data.error || "No se pudo actualizar la portada.");
@@ -346,7 +319,6 @@
         });
     });
 
-    // Botón: Eliminar recuerdo (rojo con papelera)
     const btnDelete = document.createElement("button");
     btnDelete.type = "button";
     btnDelete.className = "btn-media-control btn-media-control--delete btn-media-action--delete";
@@ -370,7 +342,6 @@
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
-            // Animación suave de salida
             card.style.opacity = "0";
             card.style.transform = "scale(0.88)";
             setTimeout(() => {
@@ -418,7 +389,6 @@
     controlsTop.appendChild(btnPreview);
     controlsTop.appendChild(btnDelete);
 
-    // Fila Inferior de Controles: Flechas de Reordenar (Izquierda / Derecha)
     const controlsBottom = document.createElement("div");
     controlsBottom.className = "media-card__controls-bottom";
 
@@ -468,16 +438,11 @@
     return card;
   }
 
-  /**
-   * Abre el modal y carga los datos de la fecha seleccionada vía Fetch API.
-   * Siempre inicia estrictamente en MODO VISUALIZACIÓN (setModoEdicion(false)).
-   */
   function abrirModal(fechaISO) {
     fechaActualModal = fechaISO;
     titulo.textContent = formatearTitulo(fechaISO);
     inputFecha.value = fechaISO;
 
-    // Resetear al Modo Visualización por defecto
     setModoEdicion(false);
 
     contenedorFotos.hidden = true;
@@ -506,16 +471,26 @@
           mensajeVacio.hidden = false;
           if (modalContainer) modalContainer.classList.add("is-empty");
           if (btnToggleModo) btnToggleModo.style.display = "none";
-          return;
+        } else {
+          contenedorFotos.hidden = false;
+          fotos.forEach((foto) => {
+            const card = crearMediaCard(foto, fechaISO);
+            contenedorFotos.appendChild(card);
+          });
+          refrescarEstadosFlechas();
         }
 
-        contenedorFotos.hidden = false;
-        fotos.forEach((foto) => {
-          const card = crearMediaCard(foto, fechaISO);
-          contenedorFotos.appendChild(card);
-        });
+        // ====================================================================
+        // NUEVO: SCROLL AUTOMÁTICO A LA ZONA DE SUBIDA
+        // ====================================================================
+        setTimeout(() => {
+          // Busca el formulario o la caja de subida por etiqueta <form> o por id
+          const areaSubida = document.querySelector("form, #contenedor-subida");
+          if (areaSubida) {
+            areaSubida.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 150); // Le damos tiempo a que el modal termine su animación de abrirse
 
-        refrescarEstadosFlechas();
       })
       .catch(() => {
         loading.textContent = "No se pudieron cargar los recuerdos de este día.";
@@ -530,7 +505,6 @@
     fechaActualModal = null;
   }
 
-  // Event Listeners del Reproductor en Grande (Lightbox)
   if (lightboxCerrar) {
     lightboxCerrar.addEventListener("click", cerrarReproductor);
   }
@@ -540,48 +514,52 @@
     });
   }
 
-  // Alternar Modo Edición desde el botón inferior
   if (btnToggleModo) {
     btnToggleModo.addEventListener("click", () => {
       setModoEdicion(!modoEdicionActivo);
     });
   }
 
-// Event Listeners del Modal y Sorpresa de Cumpleaños
+  // Event Listeners del Modal y Sorpresa de Cumpleaños
   document.querySelectorAll(".calendar-day[data-fecha]").forEach((celda) => {
     
     celda.addEventListener("click", (e) => {
-      // Si hizo clic en el botón de sorpresa, NO abrimos el modal de fotos
       if (e.target.closest('.btn-cumple-calendario')) return;
       abrirModal(celda.dataset.fecha);
     });
 
-    // Validar si la celda es el 9 de Noviembre
-    const fechaString = celda.dataset.fecha; // Ej: "2026-11-09"
+    const fechaString = celda.dataset.fecha;
     if (fechaString && fechaString.endsWith("-11-09")) {
         
-        // 1. Pintamos la celda de azul
         celda.classList.add("dia-cumple");
 
-        // 2. Verificamos la fecha actual (En JS, Enero es 0, Noviembre es 10)
         const hoy = new Date();
         const mesActual = hoy.getMonth(); 
         const diaActual = hoy.getDate();
 
-        // Si estamos a 9 de noviembre o después, O en diciembre en adelante
         if ((mesActual === 10 && diaActual >= 9) || mesActual > 10) {
-            
-            // Creamos el botón
             const btnSorpresa = document.createElement("a");
             btnSorpresa.href = "/feliz-cumpleanos"; 
             btnSorpresa.className = "btn-cumple-calendario";
             btnSorpresa.innerHTML = "🎁 Sorpresa";
-            
-            // Lo metemos en la celda
             celda.appendChild(btnSorpresa);
         }
     }
   });
+
+  // =========================================================================
+  // NUEVO: Leyenda de Cumpleaños (Solo visible si es el mes de Noviembre)
+  // =========================================================================
+  const leyendaCumple = document.getElementById("leyenda-cumple");
+  if (leyendaCumple) {
+    // Escanea todos los días del calendario visible para ver si alguno pertenece a Noviembre ("-11-")
+    const esVistaNoviembre = Array.from(document.querySelectorAll(".calendar-day[data-fecha]")).some(c => c.dataset.fecha.includes("-11-"));
+    if (esVistaNoviembre) {
+      leyendaCumple.style.display = "inline-block";
+    } else {
+      leyendaCumple.style.display = "none";
+    }
+  }
 
   botonCerrar.addEventListener("click", cerrarModal);
   overlay.addEventListener("click", (evento) => {
@@ -589,12 +567,10 @@
   });
   document.addEventListener("keydown", (evento) => {
     if (evento.key === "Escape") {
-      // Si el reproductor en grande está abierto, solo cerramos el reproductor
       if (lightboxOverlay && lightboxOverlay.classList.contains("is-open")) {
         cerrarReproductor();
         return;
       }
-      // Si el modal de recuerdos está abierto, lo cerramos
       if (overlay.classList.contains("is-open")) {
         cerrarModal();
       }
@@ -615,7 +591,6 @@
       const formData = new FormData();
       formData.append("portada", archivo);
 
-      // Enviamos el año y mes activo para asociar la portada a ese mes específico
       if (calendarCoverCard) {
         if (calendarCoverCard.dataset.anio) {
           formData.append("anio", calendarCoverCard.dataset.anio);
@@ -635,7 +610,6 @@
           inputCambiarPortada.value = "";
 
           if (data.success) {
-            // Anti-caché forzando query param con timestamp
             const cacheBusterUrl = `/static/${data.ruta_portada}?t=${data.timestamp || Date.now()}`;
             const esVideo = data.tipo_media === "video" || esVideoUrl(data.ruta_portada);
 
