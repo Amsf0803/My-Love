@@ -92,6 +92,20 @@ FLORES = [
         "imagen": "hortencias-1.jpeg",
         "color_acento": "#ba75ff",
     },
+
+    {
+        "id": 5,
+        "tipo": "ramo",
+        "fecha": "09 de noviembre, 2026 (Aunque te las di el 07 de noviembre)", 
+        "titulo": "Las flores de tu cumpleaños 🎉",
+        "mensaje": (
+            "En tu día especial, quiero recordarte lo increíble que eres y lo afortunado que me siento de tenerte en mi vida. "
+            "Aunque te di estas flores unos dias antes de tu cumpleaños espero que te hayan gustado y que hayan hecho tu día aún más especial. "
+            "Te amo con todo mi corazón y espero poder estar a tu lado para celebrar muchos más cumpleaños juntos. ¡Feliz cumpleaños, mi amor! 🎂💖"
+        ),
+        "imagen": "ramo_celeste.png",
+        "color_acento": "#8ab6d6", 
+    },
     # ------------------------------------------------------------------
     #  ¿Quieres plantar otra flor?  Copia este bloque y llena los campos:
     # ------------------------------------------------------------------

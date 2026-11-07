@@ -2176,3 +2176,34 @@ nav,
     margin-right: 6px;
     vertical-align: middle;
 }
+
+/* --- ESTILOS LLAMATIVOS PARA EL RAMO DE CUMPLE --- */
+.flor-cumple {
+    border: 2px solid var(--acento) !important;
+    animation: resplandor-cumple 3s infinite alternate;
+}
+
+/* El resplandor azul palpitante */
+@keyframes resplandor-cumple {
+    0% { box-shadow: 0 0 15px rgba(138, 182, 214, 0.4); transform: translateY(0); }
+    100% { box-shadow: 0 0 35px rgba(138, 182, 214, 0.9); transform: translateY(-4px); }
+}
+
+/* La etiqueta de regalo (ahora dentro de flor-card__visual) */
+.badge-cumple {
+    position: absolute;
+    top: 15px; /* Separación desde el borde superior de la imagen */
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00b4d8 0%, #90e0ef 100%);
+    color: #03045e;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.90rem;
+    z-index: 50; /* Por encima de la foto y el SVG */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    pointer-events: none;
+}

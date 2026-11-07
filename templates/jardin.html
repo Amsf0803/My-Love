@@ -19,7 +19,7 @@
 
   {% if flores %}
   <div class="jardin-grid">
-    {% for flor in flores %}
+    {% for flor in flores | reverse %}
     {# ----------------------------------------------------------------
        Cada tarjeta de flor.
 
@@ -41,6 +41,9 @@
 
       {# — Capa visual: SVG + imagen real apilados — #}
       <div class="flor-card__visual">
+        {% if flor.tipo == 'ramo' %}
+        <div class="badge-cumple">🎁 Especial por tu cumple amor 💕</div>
+        {% endif %}
         {% if flor.tipo == 'hortensia' %}
         {# SVG boceto de Hortensia: ramillete de florecitas de 4 pétalos, tallo y hojas anchas #}
         <svg class="flor-svg" viewBox="0 0 200 260" fill="none"
@@ -133,6 +136,34 @@
           {# Líneas interiores del pétalo central #}
           <path class="flor-svg__path" d="M92 50 C95 72, 96 95, 100 115" stroke="var(--acento)" stroke-width="1.1"/>
           <path class="flor-svg__path" d="M108 50 C105 72, 104 95, 100 115" stroke="var(--acento)" stroke-width="1.1"/>
+        </svg>
+
+        {% elif flor.tipo == 'ramo' %}
+        {# SVG de Ramo Realista: Envoltura, moño y flores grandes #}
+        <svg class="flor-svg" viewBox="0 0 200 260" fill="none"
+             xmlns="http://www.w3.org/2000/svg"
+             preserveAspectRatio="xMidYMid meet"
+             aria-hidden="true">
+          
+          {# Envoltura de papel (cucurucho) #}
+          <path class="flor-svg__path" d="M 60 250 L 140 250 L 160 140 L 40 140 Z" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 40 140 C 20 120, 20 90, 50 80 C 40 110, 60 130, 80 140" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 160 140 C 180 120, 180 90, 150 80 C 160 110, 140 130, 120 140" stroke="var(--acento)" stroke-width="1.5"/>
+
+          {# Moño / Lazo en el centro #}
+          <path class="flor-svg__path" d="M 100 190 C 80 170, 60 200, 90 200 C 95 200, 100 195, 100 190" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 100 190 C 120 170, 140 200, 110 200 C 105 200, 100 195, 100 190" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 100 190 L 85 225" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 100 190 L 115 225" stroke="var(--acento)" stroke-width="1.5"/>
+
+          {# Flor Central Gigante (Lirio) #}
+          <path class="flor-svg__path" d="M 100 140 C 85 100, 95 60, 100 40 C 105 60, 115 100, 100 140" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 100 140 C 70 120, 40 100, 30 80 C 60 90, 80 110, 100 140" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 100 140 C 130 120, 160 100, 170 80 C 140 90, 120 110, 100 140" stroke="var(--acento)" stroke-width="1.5"/>
+          
+          {# Flores laterales (Rosas/Hortensias) #}
+          <path class="flor-svg__path" d="M 70 110 C 50 90, 70 60, 85 85 C 95 65, 110 90, 90 100 Z" stroke="var(--acento)" stroke-width="1.5"/>
+          <path class="flor-svg__path" d="M 130 110 C 150 90, 130 60, 115 85 C 105 65, 90 90, 110 100 Z" stroke="var(--acento)" stroke-width="1.5"/>
         </svg>
         {% else %}
         {# SVG boceto de flor genérica/amarilla — se dibuja con animación #}

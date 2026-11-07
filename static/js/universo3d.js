@@ -226,6 +226,20 @@ function posicionarEnGalaxia(indice) {
 
 const cargadorTexturas = new THREE.TextureLoader();
 
+// Paleta ponderada: 6 azules (60 %) + 4 tonos extra (40 %)
+const COLORES_MARCOS = [
+  0x00b4d8, // celeste brillante
+  0x0077b6, // azul rey
+  0x023e8a, // azul marino
+  0x00f5ff, // azul neón / cian
+  0x48cae4, // azul cielo suave
+  0x1a6fbd, // azul medio intenso
+  0xeab654, // amarillo dorado (original)
+  0xff6fa8, // rosa suave
+  0xb57bee, // morado lavanda
+  0xe8e8e8, // blanco / plata
+];
+
 function crearMarcoFoto(item, indice) {
   const grupo = new THREE.Group();
   const { x, y, z } = posicionarEnGalaxia(indice);
@@ -238,14 +252,18 @@ function crearMarcoFoto(item, indice) {
 
   const marco = new THREE.Mesh(
     new THREE.PlaneGeometry(1.34, 1.34),
-    new THREE.MeshBasicMaterial({ color: 0xeab654 })
+    new THREE.MeshBasicMaterial({
+      color: COLORES_MARCOS[Math.floor(Math.random() * COLORES_MARCOS.length)],
+      transparent: true,
+      opacity: 0,
+    })
   );
   marco.position.z = -0.02;
   grupo.add(marco);
 
   const foto = new THREE.Mesh(
     new THREE.PlaneGeometry(1.2, 1.2),
-    new THREE.MeshBasicMaterial({ color: 0x1c1e3d, side: THREE.DoubleSide })
+    new THREE.MeshBasicMaterial({ color: 0x1c1e3d, side: THREE.DoubleSide, transparent: true, opacity: 0 })
   );
   grupo.add(foto);
 
@@ -263,6 +281,8 @@ function crearMarcoFoto(item, indice) {
     video.autoplay = true;
     video.preload = "auto"; // <-- ESTA LÍNEA ARREGLA EL PREVIEW NEGRO
     video.play().catch(e => console.warn("El navegador pausó el autoplay del video:", e));
+
+    grupo.userData.elementoVideo = video;
 
     const texturaVideo = new THREE.VideoTexture(video);
     texturaVideo.minFilter = THREE.LinearFilter;
@@ -336,6 +356,44 @@ function animar() {
   textoFlotante.quaternion.copy(camera.quaternion);
 
   grupoFotos.rotation.y = t * 0.03;
+
+  // --- Distance Culling: fade y control de videos por proximidad ---
+  grupoFotos.children.forEach((grupo) => {
+    // Posición mundial del grupo (descarta la rotación del contenedor)
+    const posicionMundial = new THREE.Vector3();
+    grupo.getWorldPosition(posicionMundial);
+    const distancia = camera.position.distanceTo(posicionMundial);
+
+    // Degradado: 1 si dist < 15 | lerp 1→0 entre 15–25 | 0 si dist > 25
+    let opacidad;
+    if (distancia < 15) {
+      opacidad = 1;
+    } else if (distancia <= 25) {
+      opacidad = 1 - (distancia - 15) / 10;
+    } else {
+      opacidad = 0;
+    }
+
+    // Aplicar opacidad a todos los hijos (marco + foto)
+    grupo.children.forEach((mesh) => {
+      if (mesh.material) {
+        mesh.material.opacity = opacidad;
+        mesh.visible = opacidad > 0.01;
+      }
+    });
+
+    // Control de reproducción de video según visibilidad
+    const video = grupo.userData.elementoVideo;
+    if (video) {
+      if (opacidad < 0.1) {
+        if (!video.paused) video.pause();
+      } else {
+        if (video.paused) {
+          video.play().catch(() => {});
+        }
+      }
+    }
+  });
 
   controls.update();
   renderer.render(scene, camera);
