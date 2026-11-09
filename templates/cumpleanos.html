@@ -125,7 +125,7 @@
                 <span id="btn-voz-secreta" title="Toca para escuchar un secreto...">💗</span>
             </p>
             <!-- Audio oculto para tu voz -->
-            <audio id="audio-voz" src="{{ url_for('static', filename='cumple/nota_voz.mp3') }}"></audio>
+            <audio id="audio-voz" src="{{ url_for('static', filename='img/cumple/Cumple1.m4a') }}"></audio>
             
             <!-- Limpiamos los flotantes para que la carta termine bien -->
             <div style="clear: both;"></div>
@@ -302,6 +302,8 @@
 
 // --- LÓGICA DEL MENSAJE DE VOZ ---
     const audioVoz = document.getElementById("audio-voz");
+
+    audioVoz.volume = 0.3;
     const btnVoz = document.getElementById("btn-voz-secreta");
     const dedoPista = document.getElementById("pista-dedo"); // Seleccionamos el dedo
 
