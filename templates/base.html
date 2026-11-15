@@ -17,6 +17,7 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  <script src="{{ url_for('static', filename='js/ascii_transitions.js') }}?v={{ range(100000, 999999) | random }}"></script>
   <canvas id="starfield" aria-hidden="true"></canvas>
   {% if mostrar_regalo %}
     <a href="{{ url_for('feliz_cumpleanos') }}" id="btn-regalo-sorpresa">🎁</a>
@@ -73,6 +74,7 @@
     </main>
   </div>
 
+  <script src="{{ url_for('static', filename='js/splash_seasonal.js') }}?v={{ range(100000, 999999) | random }}"></script>
   <script src="{{ url_for('static', filename='js/starfield.js') }}?v={{ range(100000, 999999) | random }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}?v={{ range(100000, 999999) | random }}"></script>
   {% block scripts %}{% endblock %}

@@ -402,5 +402,8 @@ function animar() {
 animar();
 
 requestAnimationFrame(() => {
-  setTimeout(() => loadingOverlay.classList.add("is-hidden"), 350);
+  setTimeout(() => {
+    loadingOverlay?.classList.add("is-hidden");
+    window.dispatchEvent(new CustomEvent("page-ready", { detail: { page: "universo" } }));
+  }, 350);
 });

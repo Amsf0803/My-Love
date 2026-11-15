@@ -1,20 +1,23 @@
 /**
  * Efecto inmersivo de Aniversario.
- * Se muestra automáticamente en pantalla completa cada vez que se cargue
- * o recargue la página, únicamente si hoy es el día 3 del mes.
+ * Se muestra automáticamente en el menú principal cada vez que se cargue
+ * la página el día 3 del mes (o con el parámetro ?aniversario=1).
  *
- * Sin persistencia en localStorage/sessionStorage, garantizando que se aprecie
- * en cada recarga durante el día 3.
+ * Se coordina con splash_seasonal.js para no encimarse:
+ * Si el Corazón 3D ASCII está activo, espera a que concluya antes de mostrar
+ * esta tarjeta conmemorativa con el mensaje de felicitación.
  */
 (function () {
   const hoy = new Date();
+  const urlParams = new URLSearchParams(window.location.search);
+  const forzarAniversario = urlParams.get('aniversario') === '1';
 
-  // 1. Condición estricta: Solo ejecutar si hoy es el día 3 del mes
-  if (hoy.getDate() !== 3) {
+  // 1. Condición estricta: Solo ejecutar si hoy es el día 3 del mes (o forzado con ?aniversario=1)
+  if (hoy.getDate() !== 3 && !forzarAniversario) {
     return;
   }
 
-  // 2. Fecha de inicio: 3 de Julio de 2026 (mes 6 en JavaScript, base 0)
+  // 2. Fecha de inicio de la relación: 3 de Julio de 2026 (mes 6 en JavaScript, base 0)
   const fechaInicio = new Date(2026, 6, 3);
 
   // Cálculo exacto de los meses transcurridos
@@ -32,14 +35,25 @@
   const nombreMes = hoy.toLocaleDateString("es-ES", { month: "long" });
   const mesCapitalizado = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
 
+  let sorpresaLanzada = false;
+
   // 4. Crear e inyectar el contenedor inmersivo en el DOM (únicamente en el menú principal)
   function lanzarSorpresa() {
+    if (sorpresaLanzada) return;
+
+    // Si el splash 3D ASCII está activo en este instante, posponer para no encimar overlays
+    if (window.__splashActive || document.getElementById('seasonal-splash-overlay')) {
+      return;
+    }
+
     const esDashboard =
       document.body.classList.contains("page-dashboard") ||
       document.getElementById("contador") !== null;
 
     if (!esDashboard) return;
     if (document.getElementById("anniversary-overlay")) return;
+
+    sorpresaLanzada = true;
 
     const overlay = document.createElement("div");
     overlay.id = "anniversary-overlay";
@@ -82,9 +96,20 @@
     }, TIEMPO_VISIBLE_MS);
   }
 
+  // Exponer para que splash_seasonal.js pueda ejecutarlo al desmontarse
+  window.lanzarSorpresaAniversario = lanzarSorpresa;
+  window.addEventListener('splash-finished', lanzarSorpresa);
+
+  // Ejecución inicial: si el splash 3D no está presente, arrancar de inmediato
+  function checkInit() {
+    if (!window.__splashActive && !document.getElementById('seasonal-splash-overlay')) {
+      lanzarSorpresa();
+    }
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", lanzarSorpresa);
+    document.addEventListener("DOMContentLoaded", checkInit);
   } else {
-    lanzarSorpresa();
+    checkInit();
   }
 })();
