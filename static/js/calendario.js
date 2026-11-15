@@ -541,7 +541,7 @@
             const btnSorpresa = document.createElement("a");
             btnSorpresa.href = "/feliz-cumpleanos"; 
             btnSorpresa.className = "btn-cumple-calendario";
-            btnSorpresa.innerHTML = "🎁 Sorpresa";
+            btnSorpresa.innerHTML = "🎁";
             celda.appendChild(btnSorpresa);
         }
     }

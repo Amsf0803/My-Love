@@ -536,6 +536,8 @@ main {
   margin-bottom: 1.75rem;
 }
 
+
+
 /* --- Teclado numérico (PIN de 4 dígitos) --- */
 .pin-display {
   display: flex;
@@ -2206,4 +2208,66 @@ nav,
     white-space: nowrap;
     letter-spacing: 0.5px;
     pointer-events: none;
+}
+
+/* =========================================================================
+   FIX RESPONSIVO CALENDARIO EN MÓVIL (Especialmente Noviembre / Día Cumple)
+   ========================================================================= */
+
+/* 1. Evita que cualquier celda ensanche su columna y corte el calendario */
+.calendar-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-day {
+  min-width: 0;
+  overflow: hidden;
+  padding: 2px;
+}
+
+/* 2. Ajuste del botón "Sorpresa" del 9 de noviembre */
+.btn-cumple-calendario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 2px 5px;
+  font-size: 0.68rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .page-calendario .container {
+    padding: 1.5rem 0.75rem 3.5rem;
+  }
+
+  .calendar-grid {
+    gap: 0.25rem;
+  }
+
+  .calendar-day {
+    font-size: 0.82rem;
+    border-radius: 8px;
+  }
+
+  /* En celular hacemos la etiqueta compacta para que quepa perfecto dentro del cuadro */
+  .btn-cumple-calendario {
+    margin-top: 2px;
+    padding: 2px 3px;
+    font-size: 0.54rem;
+    letter-spacing: -0.02em;
+    border-radius: 5px;
+    width: 94%;
+  }
+
+  .calendar-legend {
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
 }
